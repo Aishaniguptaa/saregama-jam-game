@@ -56,6 +56,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** After the label change, we played again. Below the line, when a note reaches the line, that works well now. It's too fast.
 - **Decided, and why (ag, nc):** Both of us. So we can see which key is which.
 
+### 13:33: Slow the notes down
+- **Changed:** Slowing the notes down. How much is not set yet.
+- **Expected:** didn't predict
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. It's too fast.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
