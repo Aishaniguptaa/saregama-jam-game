@@ -137,3 +137,12 @@ Format for each playtest (after M2 and after M3):
 *Short summary for the gallery, taken from your running log in `devlog/AI-USE-LOG.md` (not from memory at the last minute). Say what you directed yourselves, what Claude Code did in the build terminal (and its builder subagents), and what other AI tools did. List every AI-generated asset file again here, or cite the log row that names it.*
 
 *Be accurate: neither more nor less than what happened.*
+
+**Draft, to confirm.** Taken from `devlog/AI-USE-LOG.md`, `meta.json`, and the git log.
+
+- **Directed by us (ag, nc):** the concept (a Hampi temple pillar orchestra, Rhythm Journey first, Compose if it fits), the card (Timing tapper), real recorded instruments over synthesized ones, pillars in a column with the light showing the press, the portal sky sequence, the scoring rules, keeping 3D pillars over Claude's 2D boxes, and our own models over Blender. Design and instrument choices were ours.
+- **Claude Code, build terminal (jam-companion):** wrote the game code for M1 to M4, including pillars, keys, lives, restart, portals, sky stages, stone walls, and controls. Searched for CC0 instrument samples. Cut a short dhol excerpt from a longer recording. Suggested tanpura when no santoor sample was found; we accepted it for now. Tried to animate the dancer. `[to confirm: any other Claude use, including the tanpura search]`
+- **Tripo AI (paid plan; its terms allow game use):** the seven pillar carvings (`assets/models/pillar1.glb` to `pillar7.glb`) and the dancer (`assets/models/Dancer.glb`, `Dancer_Rig.glb`, retopologized and rigged in Tripo). Listed in `meta.json` `ai_assets`.
+- **Sound samples (not AI-generated):** tabla, sitar, flute, dhol, and tanpura from Freesound and Wikimedia Commons, credited in `meta.json` `assets`. `[to confirm: dhol.wav is an excerpt cut by Claude; should it also be in ai_assets?]`
+- **Menu images:** `assets/homescreen.jpeg` and `assets/gameover.jpeg`, listed in `meta.json` as made by the team. `[to confirm: no AI tool was used for these]`
+- **Build plan:** `context/BUILD-PLAN.md` was drafted by the build terminal, then edited and approved by us (approved 12:36, commit 74234e4).
