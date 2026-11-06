@@ -6,6 +6,8 @@ import { createPillarLabel } from './labels.js';
 import { createKeyboard } from './input.js';
 import { createUI, updateHud, showTitle, showGameOver, showPlayHint, setInstruments, showPortal } from './ui.js';
 import { createDancer, updateDancer } from './dancer.js';
+import { createSky } from './sky.js';
+import { createBackdrop } from './backdrop.js';
 import { unlockAudio, playNote, playHit, playMiss, setInstrument } from './audio.js';
 
 // --- RENDERER
@@ -50,6 +52,12 @@ loadPillarModels(field);
 // until she does - if she never loads, the box is simply the dancer.
 const dancer = createDancer(scene);
 
+// --- BEHIND ALL OF IT: the painted temple at the far end of the corridor, and the sky the whole game
+// travels through. The sky is made last on purpose: it takes over scene.background and the fog's own
+// colour, and it holds both of them, so the corridor dissolves into the sky it is actually under.
+createBackdrop(scene); // it adds itself to the scene; nothing else ever needs to hold it
+const sky = createSky(scene);
+
 // Every window shape shows the same corridor, and the pillar line keeps its place across the screen:
 // PILLAR_COLUMN_SPLIT of the way across, on the right, wherever the window's shape puts the edges.
 function resize() {
@@ -76,6 +84,7 @@ function openPortal() {
   setInstruments(ui, state.orchestra);
   showPortal(ui, true, T.INSTRUMENTS[state.orchestra - 1]);
   state.portalTimer = T.PORTAL_CUE_SECONDS;
+  sky.setStage(state.orchestra - 1); // the same portal carries the temple one stage further out
 }
 
 function startRun() {
@@ -90,6 +99,7 @@ function startRun() {
   setInstrument(state.orchestra - 1);
   setInstruments(ui, state.orchestra);
   showPortal(ui, false);
+  sky.setStage(0); // a new run starts back in the dusk, whatever stage the last one reached
   updateHud(ui, state);
   showTitle(ui, false);
   showGameOver(ui, false, 0);
@@ -147,6 +157,23 @@ createKeyboard({
   },
 });
 
+// --- THE FRAME RATE, only when the page is asked for it: http://localhost:8000/?fps
+// It is off by default because it is a diagnostic and not part of the game, and it is written to at most
+// twice a second, so measuring the game never changes it. Judging looks for it behind a flag, and this is
+// that flag.
+const fpsBox = /[?&]fps\b/.test(window.location.search) ? document.createElement('div') : null;
+let fpsFrames = 0;
+let fpsElapsed = 0;
+if (fpsBox) {
+  Object.assign(fpsBox.style, {
+    position: 'fixed', top: '8px', right: '10px', zIndex: '99',
+    font: '600 13px ui-monospace, monospace', color: '#bff5c9',
+    textShadow: '0 0 6px rgba(0, 0, 0, 0.9)', pointerEvents: 'none',
+  });
+  fpsBox.textContent = '-- fps';
+  document.body.append(fpsBox);
+}
+
 // --- LOOP: dt comes from the frame clock, capped so a stalled frame cannot skip a whole beat
 let lastFrame = 0;
 
@@ -163,10 +190,21 @@ renderer.setAnimationLoop((now) => {
     : Math.max(0, 1 - Math.abs(field.litOffset) / T.ACCENT_FALLOFF_SECONDS);
   updateDancer(dancer, dt, accent);
   if (dancer.ready && field.dancer.box.visible) field.dancer.box.visible = false; // she has arrived
+  sky.update(dt); // the crossfade, on the frames after a portal moved the temple on a stage
 
   if (state.portalTimer > 0) {
     state.portalTimer = Math.max(0, state.portalTimer - dt);
     if (state.portalTimer === 0) showPortal(ui, false);
+  }
+
+  if (fpsBox) {
+    fpsFrames += 1;
+    fpsElapsed += dt;
+    if (fpsElapsed >= 0.5) {
+      fpsBox.textContent = `${Math.round(fpsFrames / fpsElapsed)} fps`;
+      fpsFrames = 0;
+      fpsElapsed = 0;
+    }
   }
 
   renderer.render(scene, camera);

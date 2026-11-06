@@ -192,6 +192,23 @@ export const HINT_LEFT_PERCENT = 30;    // the hint keeps to the free middle ban
 export const HINT_RIGHT_PERCENT = 30;
 export const HINT_OPACITY = 0.55;
 
+// --- THE SKY (M4 look). The temple travels out of the world one stage at a time: dusk over Hampi, up
+// through the air, the airless dark, and out to the galaxies. Every stage is drawn in code on a canvas -
+// no picture files - so the whole sky costs nothing to download, and a portal is what moves it on a stage,
+// so the orchestra and the sky grow out together.
+export const SKY_STAGE_COUNT = 4;      // stages in all; the last one is deep space
+export const SKY_STAGE_SECONDS = 1.8;  // how long the sky takes to cross from one stage to the next
+export const SKY_CANVAS_WIDTH = 1024;
+export const SKY_CANVAS_HEIGHT = 512;
+
+// --- THE PAINTED TEMPLE, hanging behind the far end of the corridor: one flat picture of the Vijay
+// Vithala temple, drawn in code like the sky. It stands past the farthest the pillars are ever put (they
+// reach about -43), and it does not fade with the fog, so the fog closes the corridor and the temple is
+// still there at the end of it.
+export const BACKDROP_Z = -52;
+export const BACKDROP_WIDTH = 170;   // generous: only the middle of it is ever in frame
+export const BACKDROP_HEIGHT = 76;
+
 // --- COLOURS (flat stone and light; the temple's own look arrives at M4)
 export const BACKGROUND_COLOR = 0x0e0d0c;
 export const FLOOR_COLOR = 0x2b2723;
