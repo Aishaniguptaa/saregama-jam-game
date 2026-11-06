@@ -15,6 +15,7 @@ You have the jam (11:00 AM to 4:00 PM). Decide now what's in, so cutting later i
 > - 3 lives: a wrong tap costs a life, a missed beat scores nothing.
 > - Perfect hits drop a collectible, collected automatically.
 > - Portals: hit the beat enough and a portal opens into a new dimension; new instrumental pillars join and a different Indian instrument plays.
+> - The portal dimension is outer space: galaxies and stars, in changing environments.
 > - Title screen, score, game over, restart.
 
 ## Out (not this jam)
@@ -29,4 +30,4 @@ You have the jam (11:00 AM to 4:00 PM). Decide now what's in, so cutting later i
 
 > - Mode 2, Compose: players use the orchestra to play and record. Deferred deliberately to protect Mode 1.
 > - More collectible types.
-> - Distinct destinations for each portal opened.
+> - A distinct environment for each portal beyond changing starfields.

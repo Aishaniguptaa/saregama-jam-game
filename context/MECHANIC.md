@@ -18,9 +18,11 @@ How the game plays. Jam rule: the whole game is built around **one action the pl
 
 *Picture the most boring or frustrating 30 seconds of this game. What happens?*
 
-> Claude's read, to be tested at the 2:00 playtest: the opening 15-20 seconds of every retry, where the tempo is slow and there is nothing to do but wait. Fix direction if it plays that way: make the first portal short (~20 hits) so the opening is a warm-up and not a wait.
+> The first 30 seconds, where the player is trying to understand the gameplay.
 >
-> Second candidate: 7 pillars at full speed arriving before the player is ready. The tightening timing window should be tunable so playtests can find where it stops being exciting.
+> Fix direction from that: teach it on screen instead of leaving them to guess, and keep the very first beats slow and forgiving so the understanding happens before the pressure does.
+>
+> Claude's additional read, to be tested at the 2:00 playtest: the opening stretch of every retry can also drag once the player already knows the game. If it plays that way, make the first portal short (~20 hits) so the opening is a warm-up and not a wait.
 
 ## Controls
 
@@ -30,7 +32,7 @@ How the game plays. Jam rule: the whole game is built around **one action the pl
 >
 > Note: these seven keys land across three keyboard rows (R/P top, S/D/G middle, M/N bottom). Readable because the letters match the notes; if the 2:00 playtest finds it fumbly, a tighter cluster is a one-line change in `tuning.js`.
 >
-> Open question: whether clicking/tapping a pillar works as well as the key.
+> Keyboard only for the action: the player never clicks a pillar. The mouse moves the camera only — a look control with no effect on scoring or on the dancer's position. The dancer stays at the beat line.
 
 ## Win and lose
 
