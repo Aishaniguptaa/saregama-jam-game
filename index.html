@@ -37,10 +37,15 @@
        straight across the menu the artwork was drawn with - on a soft dark panel, so the words read
        against the sky and the buttons underneath them stop reading as anything you could press. */
     .title-screen { background: url('assets/homescreen.jpeg') center / cover no-repeat; }
+    /* The menu the artwork was drawn with is taken out: a blurred, darkened band is laid across the middle
+       of the picture, so START GAME and the four buttons beneath it dissolve into the sky they sit on and
+       stop reading as anything you could press. The rules go on top of the band. */
+    .title-screen::before { content: ''; position: absolute; left: 0; right: 0; top: 38%; height: 52%;
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      background: linear-gradient(180deg, rgba(6, 4, 10, 0) 0%, rgba(6, 4, 10, 0.66) 14%,
+        rgba(6, 4, 10, 0.74) 86%, rgba(6, 4, 10, 0) 100%); }
     .title-body { max-width: min(92vw, 42rem); align-content: center; justify-items: center; gap: 0.4em;
-      margin-top: 16vh; padding: 1.1rem 1.6rem 1.3rem; border-radius: 14px;
-      background: linear-gradient(180deg, rgba(6, 4, 10, 0) 0%, rgba(6, 4, 10, 0.78) 12%,
-        rgba(6, 4, 10, 0.86) 82%, rgba(6, 4, 10, 0) 100%); }
+      margin-top: 16vh; padding: 1.1rem 1.6rem 1.3rem; }
     .title-body .title-ornament { margin: 0 auto 0.5em; }
     .title-body .screen-prompt { margin-top: 0.9em; }
     .title-legend { letter-spacing: 0.1em; color: #f0cd84; }
