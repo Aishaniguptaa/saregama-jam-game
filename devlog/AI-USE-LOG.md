@@ -13,6 +13,8 @@ Add one row per use (newest first). Leave blank cells as `—` if they do not ap
 | Time | Tool / model | What you asked (prompt or short summary) | What came back | Kept, changed, or rejected (why) | Game asset? |
 |------|--------------|------------------------------------------|----------------|-----------------------------------|-------------|
 | 13:00 (commit e451e98) | Claude Code, build terminal (jam-companion) | Build M1: seven plain pillars, seven keys, lives that drop on a wrong tap, restart | Commit e451e98: pillars, keys, three lives, restart in code | Kept as first build. Nothing changed yet; see devlog 13:22 | No (code only) |
+| Before 13:00 (commit c4b39a1) | Claude Code, build terminal (jam-companion), web search | Search for CC0 instrument samples: tabla, sitar, flute, dhol, santoor | Four of five found; no santoor sample | Kept the four (tabla, sitar, flute, dhol). Santoor gap still open | Yes: `assets/audio/tabla.mp3`, `sitar.mp3`, `flute.mp3`, `dhol.wav`. Credited in `meta.json` `assets` (CC0 and CC BY) |
+| Before 13:00 (commit c4b39a1) | Claude Code, build terminal (jam-companion) | Cut a short excerpt from a longer dhol recording | `assets/audio/dhol.wav` excerpt | Kept. Excerpt cut by Claude, so it may belong in `ai_assets` too; to check | Yes: `assets/audio/dhol.wav` (CC BY 3.0, Johnny Kalsi / The Dhol Foundation) |
 | | | | | | |
 
 ## Worked example
