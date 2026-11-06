@@ -34,6 +34,9 @@ const BASE_ARM_FORWARD = 0.12;    // rad they come forward, so the elbows lead a
 const BASE_ELBOW_BEND = 0.7;      // rad the elbows fold, which brings the hands in front of her chest
 const BASE_SHOULDER_LIFT = 0.05;  // rad the shoulders sit lifted: what "elbows out" looks like from the front
 const ARM_SWAY = 0.03;            // rad the arms swing a little against each other with the weight shift
+// The hands: the wrists trail the arms and mark the beat with them. The fingers are left alone.
+const HAND_TRAIL = 0.05;          // rad the wrists trail behind the arms' sway, the lag that reads as movement
+const HAND_ACCENT = 0.03;         // rad the wrists turn on the beat, a third of what the arms themselves lift
 // The beat: everything here is scaled by the accent the caller hands in, so it reads as her marking it.
 const DIP_METRES = 0.015;         // how far her hips drop on a beat, in world metres: a centimetre and a half
 const ACCENT_ARM_LIFT = 0.09;     // rad the arms rise on the beat
@@ -42,6 +45,10 @@ const ACCENT_SHOULDER = 0.03;     // rad the shoulders lift, just ahead of the a
 const ACCENT_MARK = 0.025;        // rad her whole spine tips forward, marking the beat
 const ACCENT_NOD = 0.05;          // rad she nods, her head taking most of it
 const ACCENT_NECK_SHARE = 0.6;    // the share of that nod the neck takes, her head taking the rest
+// The feet: she marks time in place, so the unweighted foot lifts a little and sets down on the beat. The
+// lift is a world height, turned into the rig's own units at load, so it stays true to her body's size.
+const STEP_METRES = 0.012;        // how far the unweighted foot is to leave the floor, in world metres
+const STEP_FIRM = 0.9;            // the share of the step the beat takes back as the foot lands, firming the set-down
 // The file has her facing -X: her toes point that way and her body is thin along X. A quarter turn
 // anticlockwise puts that front down the corridor, which is where DANCER_YAW then aims her.
 const FACING_YAW = -Math.PI / 2;
@@ -54,9 +61,11 @@ const FACING_YAW = -Math.PI / 2;
 //   shoulders and arms  +x raises the arm on both sides; -z swings the LEFT arm forward, +z the right
 //   forearms            -z on the left and +z on the right fold that elbow and bring the hand forward
 //   legs                +x swings a leg back, so a knee folds back with +x and a hip flexes with -x
+//   hands               the wrist keeps the forearm's own axes: +x turns it, and -z on the left and +z on
+//                       the right bend it forward, so one sign trails both hands against the arms' sway
 // The signs used below are that mapping and nothing else; the sizes are the numbers above.
-// The hands and the fingers are left where the file has them: five joints a hand would cost frames and
-// would not read at the distance the game stands her at.
+// The fingers are left where the file has them: five joints a hand would cost frames the hands are too
+// small to repay at the distance the game stands her at. The wrist itself moves, and carries the hand.
 
 // --- THE POSE, REBUILT EVERY FRAME
 // Each rotation is set absolutely, from the bone's rest rotation, and never added to what is already
@@ -88,8 +97,8 @@ function foldLeg(thigh, thighRest, knee, kneeRest, ankle, ankleRest, fold) {
 // --- THE JOINTS THE DANCE DRIVES, BY THE NAMES THE FILE USES
 const JOINTS = {
   hips: 'Hips', spine: 'Spine', spine1: 'Spine1', spine2: 'Spine2', neck: 'Neck', head: 'Head',
-  shoulderL: 'LeftShoulder', armL: 'LeftArm', forearmL: 'LeftForeArm',
-  shoulderR: 'RightShoulder', armR: 'RightArm', forearmR: 'RightForeArm',
+  shoulderL: 'LeftShoulder', armL: 'LeftArm', forearmL: 'LeftForeArm', handL: 'LeftHand',
+  shoulderR: 'RightShoulder', armR: 'RightArm', forearmR: 'RightForeArm', handR: 'RightHand',
   upLegL: 'LeftUpLeg', kneeL: 'LeftLeg', footL: 'LeftFoot',
   upLegR: 'RightUpLeg', kneeR: 'RightLeg', footR: 'RightFoot',
 };
@@ -132,6 +141,7 @@ export function createDancer(scene) {
     hipsRestY: 0, // where her hips sit when she is not dancing
     dipUnit: 0,   // the beat's drop of the hips, in the rig's own units...
     dipFold: 0,   // ...and the knee fold that goes with it, so the drop never lifts her feet
+    stepFold: 0,  // the knee fold that lifts an unweighted foot by STEP_METRES; the step only ever adds it
   };
   load(scene, dancer);
   return dancer;
@@ -203,6 +213,12 @@ function dress(scene, dancer, gltf) {
   dancer.hipsRestY = hips.position.y;
   dancer.dipUnit = DIP_METRES / scale;         // world metres into the rig's own units
   dancer.dipFold = 2 * Math.acos(1 - share);   // and the knee fold that same drop costs
+  // The step is that same geometry read as a rise: a fold of f lifts a foot by legLength * (1 - cos(f/2)),
+  // so the fold whose own lift is STEP_METRES is read off the leg length the dip just measured. It is only
+  // ever added to the unweighted leg, and never taken from the weighted one, so a stepped foot is always
+  // folded at least as far as a planted one: the step can lift a foot, and can never fold one down.
+  const stepShare = Math.min(0.95, Math.max(0, STEP_METRES / legLength));
+  dancer.stepFold = 2 * Math.acos(1 - stepShare);
   dancer.ready = true;
 }
 
@@ -233,8 +249,13 @@ export function updateDancer(dancer, dt, accent) {
   const armSway = ARM_SWAY * shift;
   const shoulder = BASE_SHOULDER_LIFT + ACCENT_SHOULDER * beat;
   const elbow = BASE_ELBOW_BEND + ACCENT_ELBOW * beat;
-  const foldL = BASE_FOLD + SHIFT_KNEE * (0.5 - 0.5 * shift) + dancer.dipFold * beat;
-  const foldR = BASE_FOLD + SHIFT_KNEE * (0.5 + 0.5 * shift) + dancer.dipFold * beat;
+  const handTrail = HAND_TRAIL * shift;                  // the wrists lagging behind the arms' sway
+  const handTurn = HAND_ACCENT * beat;                   // and the wrists turning, just, on the beat
+  const step = dancer.stepFold * (1 - STEP_FIRM * beat); // the step's lift, taken back as the beat sets it down
+  const freeL = Math.max(0, -shift);                     // how far the left foot may lift: 1 with the weight all right
+  const freeR = Math.max(0, shift);                      // and the right: 1 with the weight all left
+  const foldL = BASE_FOLD + SHIFT_KNEE * (0.5 - 0.5 * shift) + dancer.dipFold * beat + step * freeL;
+  const foldR = BASE_FOLD + SHIFT_KNEE * (0.5 + 0.5 * shift) + dancer.dipFold * beat + step * freeR;
 
   // --- HER BODY: the hips carry the weight shift, and the beat brings them down onto her knees
   turn(bones.hips, rest.hips, 0, SHIFT_TURN * shift, -SHIFT_TIP * shift);
@@ -255,8 +276,14 @@ export function updateDancer(dancer, dt, accent) {
   turn(bones.forearmL, rest.forearmL, 0, 0, -elbow);
   turn(bones.forearmR, rest.forearmR, 0, 0, elbow);
 
-  // --- HER LEGS: the weight shifts knee to knee, and the beat's fold is the beat's dip, so the feet
-  // stay where they are and never go through the floor
+  // --- HER HANDS: the wrists trail the arms' sway, which is what reads an arm as moving rather than held,
+  // and turn a little on the beat. One sign trails both, the same way one sign sways both arms.
+  turn(bones.handL, rest.handL, handTurn, 0, handTrail);
+  turn(bones.handR, rest.handR, handTurn, 0, handTrail);
+
+  // --- HER LEGS: the weight shifts knee to knee, the beat's fold is the beat's dip, and the unweighted
+  // foot takes its step. Every fold here is at least the planted fold and the step only ever adds to it,
+  // so a foot may lift but is never folded down further: nothing here can carry a sole through the floor.
   foldLeg(bones.upLegL, rest.upLegL, bones.kneeL, rest.kneeL, bones.footL, rest.footL, foldL);
   foldLeg(bones.upLegR, rest.upLegR, bones.kneeR, rest.kneeR, bones.footR, rest.footR, foldR);
 }

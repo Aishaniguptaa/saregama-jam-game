@@ -143,7 +143,7 @@ export const INSTRUMENT_VOICES = [
 // The whole list is on screen from the first second, dimmed; a portal is what turns a row bright and
 // hands that instrument the notes. The makers' knob for how fast the orchestra fills is HITS_PER_PORTAL.
 export const HITS_PER_PORTAL = 20;      // landed notes between one portal and the next
-export const PORTAL_CUE_SECONDS = 2.4;  // how long the portal's line stays on screen
+export const PORTAL_CUE_SECONDS = 2.8;  // how long the portal's line stays up: it covers the sky's whole crossing
 
 // --- THE DANCER'S BEAT: how sharply she marks a beat. 1 on the beat, fading to nothing over this many
 // seconds either side of it, so at the fastest tempo she is still still between beats.
@@ -196,8 +196,12 @@ export const HINT_OPACITY = 0.55;
 // through the air, the airless dark, and out to the galaxies. Every stage is drawn in code on a canvas -
 // no picture files - so the whole sky costs nothing to download, and a portal is what moves it on a stage,
 // so the orchestra and the sky grow out together.
-export const SKY_STAGE_COUNT = 4;      // stages in all; the last one is deep space
-export const SKY_STAGE_SECONDS = 1.8;  // how long the sky takes to cross from one stage to the next
+// There is one stage more than there are instruments on purpose: the orchestra starts at one and every
+// portal adds one, so INSTRUMENTS.length - 1 portals happen in a run and every single one of them has a
+// stage of its own to move the temple on to. A stage short, and the last portal would open on a sky that
+// did not change - the line would come up over nothing.
+export const SKY_STAGE_COUNT = 5;      // stages in all; the last one is the furthest out
+export const SKY_STAGE_SECONDS = 2.0;  // how long the sky takes to cross from one stage to the next
 export const SKY_CANVAS_WIDTH = 1024;
 export const SKY_CANVAS_HEIGHT = 512;
 

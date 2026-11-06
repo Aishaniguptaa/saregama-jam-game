@@ -1,10 +1,15 @@
-// sky.js — the travelling sky: four stages drawn in code on one canvas, crossfaded when a portal opens.
+// sky.js — the travelling sky: five stages drawn in code on one canvas, crossfaded when a portal opens.
 import * as THREE from 'three';
 import { SKY_STAGE_COUNT, SKY_STAGE_SECONDS, SKY_CANVAS_WIDTH, SKY_CANVAS_HEIGHT } from './tuning.js';
 
 // --- SHORTHANDS for the numbers that come from tuning.js, so the drawing code below reads in one line each
 const CANVAS_W = SKY_CANVAS_WIDTH;
 const CANVAS_H = SKY_CANVAS_HEIGHT;
+
+// --- THE FOG of the corridor's far end. The fog is a darkness the player looks into, with the sky above
+// and beyond it, so it takes only this share of the stage's horizon brightness - bright fog dissolved the
+// temple into orange haze, and darkened, the stone stays legible against it at every stage.
+const FOG_DARKEN = 0.3;           // the fog is this share of the horizon's brightness: stone, not haze
 
 // --- THE LOW SUN of the dusk stage, and the thin haze it leaves at the horizon (which sits at 0.62 of the
 // canvas height, the warmest stop of every stage's gradient below)
@@ -32,7 +37,7 @@ const CLOUD_BANDS = [
 const CLOUD_PUFF_RX = 0.16;       // one puff is this wide, of the canvas width...
 const CLOUD_PUFF_RY = 0.035;      // ...and this tall, of the canvas height
 
-// --- THE GALAXY of the last stage: one soft smear with a brighter core, on a shallow diagonal
+// --- THE GALAXY of the fourth stage: one soft smear with a brighter core, on a shallow diagonal
 const GALAXY_TILT = -0.42;        // how far the band leans across the canvas, in radians
 const GALAXY_CX = 0.52;           // where the band crosses, across the canvas
 const GALAXY_CY = 0.46;           // and up it
@@ -45,10 +50,30 @@ const GALAXY_CORE_ALPHA = 0.85;
 const GALAXY_STAR_COUNT = 140;    // small stars dusted through the band, which give it its grain
 const GALAXY_STAR_STYLE = 'rgba(222, 230, 255, 0.55)';
 
-// --- THE FOUR STAGES, each one further from the world than the last: dusk over Hampi, up through the air,
-// the airless dark, and out to the galaxies. Each stage is a sky gradient from the top of the frame down.
-// They run into one another on purpose: the overhead goes violet, blue, then dark, and the horizon goes
-// warm amber, hazy white, dim blue, then out - so the four read as one journey and not four pictures.
+// --- THE NEBULA of the last stage: not one clean band but several soft coloured clouds, cut by a dust
+// lane, over the densest starfield of all. Cold blues, violets and a touch of magenta and teal, so the
+// temple feels deeper than the galaxies - and never gold, which belongs to the pillars' glow alone.
+const NEBULA_LOBE_COLOURS = ['magenta', 'violet', 'teal', 'indigo']; // the colours a cloud may take
+const NEBULA_LOBE_COUNT = 9;      // how many soft clouds the field is built from
+const NEBULA_CENTRE_X = 0.5;      // where the clouds gather, across the canvas
+const NEBULA_CENTRE_Y = 0.47;     // and up it
+const NEBULA_SPREAD_X = 0.44;     // how far they stray from that centre, of the canvas width
+const NEBULA_SPREAD_Y = 0.32;     // and of the canvas height
+const NEBULA_LOBE_RX = 0.3;       // one cloud is this wide, of the canvas width...
+const NEBULA_LOBE_RY = 0.2;       // ...and this tall, of the canvas height
+const NEBULA_ALPHA = 0.5;         // how strongly a cloud's own colour shows
+const NEBULA_STAR_COUNT = 900;    // the field behind the clouds: denser than the galaxy stage's
+const NEBULA_BRIGHT_STAR_COUNT = 10; // and a handful of haloed stars in front of them
+const NEBULA_DUST_TILT = -0.5;    // the lean of the dark dust lane that cuts across the clouds
+const NEBULA_DUST_ALPHA = 0.5;    // how much of the dust lane's dark shows
+const NEBULA_DUST_LEN = 0.5;      // the lane reaches this far, of the canvas width
+const NEBULA_DUST_THICK = 0.05;   // and is this thin, of the canvas height
+
+// --- THE FIVE STAGES, each one further from the world than the last: dusk over Hampi, up through the air,
+// the airless dark, the galaxies, and the nebula field. Each stage is a sky gradient from the top of the
+// frame down. They run into one another on purpose: the overhead goes violet, blue, then dark, and the
+// horizon goes warm amber, hazy white, dim blue, then darker and darker - so the five read as one journey
+// and not five pictures. A stage's gradient and its horizon colour below ship together, index for index.
 const STAGE_STOPS = [
   [ // 0 — dusk over Hampi: warm amber low, deep blue-violet overhead
     [0.0, '#241d3f'], [0.24, '#40325f'], [0.42, '#7c4a6b'], [0.54, '#b96250'],
@@ -62,14 +87,18 @@ const STAGE_STOPS = [
     [0.0, '#04060d'], [0.3, '#060a16'], [0.5, '#0a1022'], [0.62, '#12203c'],
     [0.7, '#0a1224'], [0.86, '#060a15'], [1.0, '#030509'],
   ],
-  [ // 3 — the galaxies: near-black, and the fog closes on almost nothing at all
+  [ // 3 — the galaxies: near-black, with a dim blue still left at the horizon
     [0.0, '#010208'], [0.4, '#02040c'], [0.62, '#060b18'], [1.0, '#020309'],
+  ],
+  [ // 4 — the nebula field: deeper still, and the horizon has all but gone out
+    [0.0, '#010106'], [0.36, '#02020a'], [0.62, '#04050e'], [1.0, '#010105'],
   ],
 ];
 
-// The colour the corridor's fog should take at each stage: the stage's own horizon, so the temple
-// dissolves into the sky rather than into a colour that no longer matches it.
-const STAGE_HORIZON = ['#e0913f', '#dceaf3', '#12203c', '#060b18'];
+// The sky's own horizon colour at each stage, one entry per stage in the same order as STAGE_STOPS. This
+// stays the sky's colour; the corridor's fog is built from it but darkened well down (FOG_DARKEN above),
+// so the temple reads as stone against a darkness instead of dissolving into the sky's own light.
+const STAGE_HORIZON = ['#e0913f', '#dceaf3', '#12203c', '#060b18', '#04050e'];
 
 // --- A TINY FIXED-SEED GENERATOR, so the stars and clouds land in the same places on every load.
 function makeRandom(seed) {
@@ -106,13 +135,19 @@ function bandGradient(ctx, top, bottom, colour) {
   return gradient;
 }
 
-// --- THE SHARED SOFT GLOWS: one white, one warm for the sun, and the two that make up the galaxy band
+// --- THE SHARED SOFT GLOWS: one white, one warm for the sun, the two that make up the galaxy band, the
+// four cold colours the nebula clouds take, and the dark of the dust lane that cuts across them
 function buildGlows(ctx) {
   return {
     white: softGlow(ctx, 'rgba(255, 255, 255, 0.85)', 'rgba(255, 255, 255, 0)'),
     warm: softGlow(ctx, 'rgba(255, 228, 182, 0.85)', 'rgba(255, 190, 120, 0)'),
     galaxy: softGlow(ctx, 'rgba(206, 217, 255, 0.5)', 'rgba(150, 170, 255, 0)'),
     galaxyCore: softGlow(ctx, 'rgba(238, 243, 255, 0.85)', 'rgba(190, 205, 255, 0)'),
+    magenta: softGlow(ctx, 'rgba(214, 96, 176, 0.5)', 'rgba(140, 40, 130, 0)'),
+    violet: softGlow(ctx, 'rgba(150, 110, 220, 0.5)', 'rgba(80, 50, 160, 0)'),
+    teal: softGlow(ctx, 'rgba(80, 190, 190, 0.45)', 'rgba(30, 90, 120, 0)'),
+    indigo: softGlow(ctx, 'rgba(90, 112, 210, 0.45)', 'rgba(40, 50, 130, 0)'),
+    dust: softGlow(ctx, 'rgba(3, 4, 9, 0.9)', 'rgba(3, 4, 9, 0)'),
   };
 }
 
@@ -174,6 +209,25 @@ function buildGalaxyStars(random, count) {
   return stars;
 }
 
+// --- THE NEBULA CLOUDS of the last stage, built once: soft coloured lobes gathered round a centre, each
+// with its own size, lean and strength, so the field reads as gas rather than as blobs.
+function buildNebula(random) {
+  const lobes = [];
+  for (let i = 0; i < NEBULA_LOBE_COUNT; i += 1) {
+    const size = 0.6 + random() * 0.9;
+    lobes.push({
+      glowKey: NEBULA_LOBE_COLOURS[Math.floor(random() * NEBULA_LOBE_COLOURS.length) % NEBULA_LOBE_COLOURS.length],
+      x: (NEBULA_CENTRE_X + (random() - 0.5) * NEBULA_SPREAD_X) * CANVAS_W,
+      y: (NEBULA_CENTRE_Y + (random() - 0.5) * NEBULA_SPREAD_Y) * CANVAS_H,
+      rx: NEBULA_LOBE_RX * size * CANVAS_W,
+      ry: NEBULA_LOBE_RY * size * CANVAS_H,
+      rot: (random() - 0.5) * 0.9,
+      alpha: NEBULA_ALPHA * (0.55 + random() * 0.6),
+    });
+  }
+  return lobes;
+}
+
 // --- THE CLOUD PUFFS of the air stage, built once: a row of overlapping globes per band.
 function buildClouds(random) {
   const puffs = [];
@@ -205,11 +259,15 @@ function buildStyles(ctx) {
       style.clouds = buildClouds(random);
     } else if (stage === 2) {
       style.stars = buildStarBuckets(random, STAR_SHARP_COUNT);
-    } else {
+    } else if (stage === 3) {
       style.stars = buildStarBuckets(random, STAR_DENSE_COUNT);
       style.galaxy = true;
       style.galaxyStars = buildGalaxyStars(random, GALAXY_STAR_COUNT);
       style.brightStars = buildBrightStars(random, BRIGHT_STAR_COUNT);
+    } else {
+      style.stars = buildStarBuckets(random, NEBULA_STAR_COUNT);
+      style.nebula = buildNebula(random);
+      style.brightStars = buildBrightStars(random, NEBULA_BRIGHT_STAR_COUNT);
     }
     return style;
   });
@@ -237,6 +295,16 @@ function paintGalaxy(ctx, glows, baseAlpha) {
   const y = GALAXY_CY * CANVAS_H;
   stamp(ctx, glows.galaxy, x, y, GALAXY_HALF_LEN * CANVAS_W, GALAXY_HALF_THICK * CANVAS_H, GALAXY_ALPHA * baseAlpha, GALAXY_TILT);
   stamp(ctx, glows.galaxyCore, x, y, GALAXY_CORE_LEN * CANVAS_W, GALAXY_CORE_THICK * CANVAS_H, GALAXY_CORE_ALPHA * baseAlpha, GALAXY_TILT);
+}
+
+// The nebula field: its coloured clouds first, then a soft dark dust lane laid across them, kept blurry
+// and thin so it reads as dust and never as a hard stripe.
+function paintNebula(ctx, glows, lobes, baseAlpha) {
+  for (const lobe of lobes) {
+    stamp(ctx, glows[lobe.glowKey], lobe.x, lobe.y, lobe.rx, lobe.ry, lobe.alpha * baseAlpha, lobe.rot);
+  }
+  stamp(ctx, glows.dust, NEBULA_CENTRE_X * CANVAS_W, NEBULA_CENTRE_Y * CANVAS_H,
+    NEBULA_DUST_LEN * CANVAS_W, NEBULA_DUST_THICK * CANVAS_H, NEBULA_DUST_ALPHA * baseAlpha, NEBULA_DUST_TILT);
 }
 
 function paintBrightStars(ctx, glows, stars, baseAlpha) {
@@ -273,6 +341,7 @@ function paintStage(ctx, glows, style, baseAlpha) {
   if (style.stars) paintStars(ctx, style.stars, baseAlpha);
   if (style.galaxy) paintGalaxy(ctx, glows, baseAlpha);
   if (style.galaxyStars) paintGalaxyStars(ctx, style.galaxyStars, baseAlpha);
+  if (style.nebula) paintNebula(ctx, glows, style.nebula, baseAlpha);
   if (style.brightStars) paintBrightStars(ctx, glows, style.brightStars, baseAlpha);
 
   ctx.globalAlpha = 1;
@@ -323,9 +392,10 @@ export function createSky(scene) {
   const styles = buildStyles(ctx);
   const styleFor = (stage) => styles[stage] || styles[styles.length - 1] || null;
 
-  // The corridor's fog follows the sky's horizon, eased over the very same crossfade.
+  // The corridor's fog follows the sky's horizon, darkened and eased over the very same crossfade. The
+  // hex array above stays the sky's own horizon; only the fog colour applied here is darkened down.
   const fog = scene && scene.fog && scene.fog.color ? scene.fog : null;
-  const horizonColors = STAGE_HORIZON.map((hex) => new THREE.Color(hex));
+  const fogColors = STAGE_HORIZON.map((hex) => new THREE.Color(hex).multiplyScalar(FOG_DARKEN));
   const fogFrom = new THREE.Color();
   const fogTo = new THREE.Color();
 
@@ -358,7 +428,7 @@ export function createSky(scene) {
       state.t = 0;
       if (fog) {
         fogFrom.copy(fog.color);
-        fogTo.copy(horizonColors[target] || horizonColors[0]);
+        fogTo.copy(fogColors[target] || fogColors[0]);
       }
       redraw(state.from, sky.stage, 0); // show the stage being left at once, whatever was mid-fade
     },
@@ -377,7 +447,7 @@ export function createSky(scene) {
   redraw(0, 0, 1);
   if (scene) scene.background = texture;
   if (fog) {
-    fog.color.copy(horizonColors[0]);
+    fog.color.copy(fogColors[0]);
     fogFrom.copy(fog.color);
     fogTo.copy(fog.color);
   }
