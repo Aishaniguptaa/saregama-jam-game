@@ -12,7 +12,7 @@ How the game looks and sounds. References help Claude more than adjectives.
 
 *Colors, or a description of them.*
 
-> Stone brown and grey for the temple. The pillar glow is the colour on top of that.
+> Stone brown and grey for the temple. The pillar glow is one colour for all seven pillars: a rich, luxurious golden yellow.
 >
 > The outer space dimension is galaxies and stars in changing environments.
 

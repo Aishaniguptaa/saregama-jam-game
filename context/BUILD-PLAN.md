@@ -75,9 +75,11 @@ Drafted by the build terminal from your context kit and your card; you edit and 
 
 - **Blender is not installed**, so no custom GLB export. Models are built from three.js primitives — temple, pillars and dancer as boxes and cylinders. Free, no licence, and it keeps playtests judging the action.
 - If you want a real dancer model instead, that means downloading a licensed GLB: hunting time plus a licence to record in `meta.json`. Your call, at M4.
-- **Sounds: 5 instruments wanted, the card's safe budget is about 3 files.** Two routes, to decide at M3:
-  - Synthesized per note with Web Audio — no files, no licences, each instrument approximated.
-  - Real CC0 samples — needs sourcing, and each file's source and licence recorded in `meta.json`.
+- **Sounds: 5 instruments wanted (Tabla, Sitar, Flute, Dhol, Santoor), the card's safe budget is about 3 files.** Makers chose **real samples**, so the plan is:
+  - M1 uses **synthesized placeholder tones** in `audio.js`, so the game has sound from the first playtest and the feel pass at M3 is not blocked.
+  - Claude searches for **CC0 / public domain** samples in parallel from M1; real samples swap into the same `audio.js` interface at M4, or earlier if the search lands early.
+  - Each replaced file gets `{ file, source, license }` in `meta.json`.
+  - Safeguard: if no correctly-licensed sample is found for an instrument, that instrument keeps its synthesized tone. The game ships either way.
 - Every downloaded file gets `{ file, source, license }` in `meta.json`; every file Claude creates goes in `ai_assets`.
 
 ## Cut list
