@@ -65,26 +65,28 @@ export function createUI(root) {
     return frame;
   }
 
-  // The small rule under the title: two tapering lines, two studs and a diamond gem at the centre.
-  const titleOrnament = el('div', 'title-ornament');
-  titleOrnament.setAttribute('aria-hidden', 'true');
-  titleOrnament.append(
-    el('span', 'orn-line orn-line-left'),
-    el('span', 'orn-dot'),
-    el('span', 'orn-gem'),
-    el('span', 'orn-dot'),
-    el('span', 'orn-line orn-line-right'),
-  );
+  // The small rule under a title: two tapering lines, two studs and a diamond gem at the centre.
+  function titleOrnament() {
+    const ornament = el('div', 'title-ornament');
+    ornament.setAttribute('aria-hidden', 'true');
+    ornament.append(
+      el('span', 'orn-line orn-line-left'),
+      el('span', 'orn-dot'),
+      el('span', 'orn-gem'),
+      el('span', 'orn-dot'),
+      el('span', 'orn-line orn-line-right'),
+    );
+    return ornament;
+  }
 
-  // The title screen is the name and the ornament only: the rules themselves live on their own screen.
-  const title = el('div', 'screen');
+  // --- THE TITLE: the makers' own artwork fills the screen and carries the name and the look, so the live
+  // title text stands down and the prompt is the only thing laid over it, on the dark floor at the foot of
+  // the picture. The rules get their own screen behind this one: title -> SPACE -> rules -> SPACE -> play.
+  const title = el('div', 'screen title-screen');
+  title.setAttribute('aria-label', 'SaReGaMa — a rhythm journey through Hampi');
   const titleBody = el('div', 'screen-body');
-  titleBody.append(
-    el('h1', 'screen-title', 'SaReGaMa'),
-    titleOrnament,
-    el('p', 'screen-prompt', 'Press SPACE to continue'),
-  );
-  title.append(screenFrame(), titleBody);
+  titleBody.append(el('p', 'screen-prompt', 'Press SPACE to continue'));
+  title.append(titleBody);
 
   // --- THE RULES: the same gold-framed screen as the title, but on near-black, so the play rules are the
   // only thing to read. It sits between the title and the run: title -> SPACE -> rules -> SPACE -> play.
@@ -93,6 +95,7 @@ export function createUI(root) {
   const rulesBody = el('div', 'screen-body');
   rulesBody.append(
     el('h1', 'screen-title', 'How to Play'),
+    titleOrnament(),
     el('p', 'screen-line', legend),
     el('p', 'screen-line', 'The pillars travel past you on the right. When one lights up, press its key.'),
     el('p', 'screen-line', 'The right key always scores. A wrong key costs a life. Nothing else does.'),
