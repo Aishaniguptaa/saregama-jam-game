@@ -53,7 +53,7 @@ Format for each playtest (after M2 and after M3):
 ### 13:30: Label the lanes with their keys
 - **Changed:** Changing the lanes: adding labels so we can see which key is which.
 - **Expected:** To work out which key to hit, so we can play.
-- **Saw:** Not yet.
+- **Saw:** After the label change, we played again. Below the line, when a note reaches the line, that works well now. It's too fast.
 - **Decided, and why (ag, nc):** Both of us. So we can see which key is which.
 
 ## Reflection
