@@ -81,6 +81,7 @@ export function createUI(root) {
     bottom: `${HINT_BOTTOM_PERCENT}%`,
     textAlign: 'center',
     fontSize: `${HINT_FONT_PX}px`,
+    color: '#ecd9b4', // the warm parchment-cream of the temple's body text, matching #ui
     opacity: String(HINT_OPACITY),
   });
 
