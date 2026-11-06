@@ -1,4 +1,4 @@
-// ui.js — the DOM overlay: score, combo and lives, the orchestra panel on the left, the one-line play hint, and the title and game-over screens.
+// ui.js — the DOM overlay: score, combo and lives, the orchestra panel on the left, the one-line play hint, and the title, rules and game-over screens.
 import {
   LIVES, INSTRUMENTS, KEYS, SWARAS,
   INSTRUMENT_AREA_LEFT_PERCENT, INSTRUMENT_AREA_TOP_PERCENT, INSTRUMENT_AREA_WIDTH_PERCENT,
@@ -76,18 +76,30 @@ export function createUI(root) {
     el('span', 'orn-line orn-line-right'),
   );
 
+  // The title screen is the name and the ornament only: the rules themselves live on their own screen.
   const title = el('div', 'screen');
   const titleBody = el('div', 'screen-body');
   titleBody.append(
     el('h1', 'screen-title', 'SaReGaMa'),
     titleOrnament,
+    el('p', 'screen-prompt', 'Press SPACE to continue'),
+  );
+  title.append(screenFrame(), titleBody);
+
+  // --- THE RULES: the same gold-framed screen as the title, but on near-black, so the play rules are the
+  // only thing to read. It sits between the title and the run: title -> SPACE -> rules -> SPACE -> play.
+  const rules = el('div', 'screen');
+  Object.assign(rules.style, { background: 'rgba(6, 4, 10, 0.96)' }); // opaque enough to be a black screen
+  const rulesBody = el('div', 'screen-body');
+  rulesBody.append(
+    el('h1', 'screen-title', 'How to Play'),
     el('p', 'screen-line', legend),
     el('p', 'screen-line', 'The pillars travel past you on the right. When one lights up, press its key.'),
     el('p', 'screen-line', 'The right key always scores. A wrong key costs a life. Nothing else does.'),
     el('p', 'screen-line', 'Every note you land is played by your orchestra.'),
     el('p', 'screen-prompt', 'Press SPACE to begin'),
   );
-  title.append(screenFrame(), titleBody);
+  rules.append(screenFrame(), rulesBody);
 
   const over = el('div', 'screen');
   const overBody = el('div', 'screen-body');
@@ -134,10 +146,11 @@ export function createUI(root) {
     transition: 'opacity 320ms ease',
   });
 
-  root.append(hud, area, hint, portal, title, over);
+  root.append(hud, area, hint, portal, title, rules, over);
 
-  const ui = { score, combo, lives, area, list, hint, portal, title, over, overScore };
+  const ui = { score, combo, lives, area, list, hint, portal, title, rules, over, overScore };
   over.hidden = true; // the game-over screen only appears when a run ends
+  rules.hidden = true; // and the rules only between the title and the run
   hint.hidden = true; // and the play hint only while a run is on
   updateHud(ui, { score: 0, lives: LIVES, combo: 0 });
   setInstruments(ui, 1);
@@ -176,6 +189,10 @@ export function updateHud(ui, { score, lives, combo }) {
 
 export function showTitle(ui, visible) {
   ui.title.hidden = !visible;
+}
+
+export function showRules(ui, visible) {
+  ui.rules.hidden = !visible;
 }
 
 export function showGameOver(ui, visible, score) {

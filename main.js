@@ -1,10 +1,10 @@
-// main.js — the scene, the render loop and the state machine (title -> playing -> gameover): the one file that wires the others.
+// main.js — the scene, the render loop and the state machine (title -> rules -> playing -> gameover): the one file that wires the others.
 import * as THREE from 'three';
 import * as T from './tuning.js';
 import { createField, resetField, updateField, pressPillar, setColumnX, loadPillarModels } from './pillars.js';
 import { createPillarLabel } from './labels.js';
 import { createKeyboard } from './input.js';
-import { createUI, updateHud, showTitle, showGameOver, showPlayHint, setInstruments, showPortal } from './ui.js';
+import { createUI, updateHud, showTitle, showRules, showGameOver, showPlayHint, setInstruments, showPortal } from './ui.js';
 import { createDancer, updateDancer } from './dancer.js';
 import { createSky } from './sky.js';
 import { createBackdrop } from './backdrop.js';
@@ -102,6 +102,7 @@ function startRun() {
   sky.setStage(0); // a new run starts back in the dusk, whatever stage the last one reached
   updateHud(ui, state);
   showTitle(ui, false);
+  showRules(ui, false);
   showGameOver(ui, false, 0);
   showPlayHint(ui, true);
 }
@@ -145,15 +146,21 @@ function tapLane(lane) {
   if (state.hits % T.HITS_PER_PORTAL === 0) openPortal(); // the reward: one more instrument in the orchestra
 }
 
-// --- INPUT: sound wakes on the first keypress, SPACE starts and restarts
+// --- INPUT: sound wakes on the first keypress, SPACE walks title -> rules -> play, and restarts a run
 createKeyboard({
   onLane: (lane) => {
     unlockAudio();
     tapLane(lane);
   },
   onRestartKey: () => {
-    unlockAudio();
-    if (state.phase === 'title' || state.phase === 'gameover') startRun();
+    unlockAudio(); // the first press of the page still wakes the sound, whatever screen is up
+    if (state.phase === 'title') {
+      showTitle(ui, false); // the rules take the title's place; the run has not begun yet
+      showRules(ui, true);
+      state.phase = 'rules';
+      return;
+    }
+    if (state.phase === 'rules' || state.phase === 'gameover') startRun();
   },
 });
 
@@ -215,4 +222,5 @@ resize();
 updateHud(ui, state);
 setInstruments(ui, state.orchestra);
 showTitle(ui, true);
+showRules(ui, false);
 showGameOver(ui, false, 0);
