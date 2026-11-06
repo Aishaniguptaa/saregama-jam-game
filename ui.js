@@ -104,17 +104,16 @@ export function createUI(root) {
   );
   rules.append(screenFrame(), rulesBody);
 
-  const over = el('div', 'screen');
+  // --- THE GAME OVER SCREEN: the makers' own artwork again, full bleed. The picture already carries GAME
+  // OVER, the "SCORE" label and "Press SPACE to Play Again", so the one thing it cannot know - the run's
+  // real score - is the only thing the game adds, laid on a soft bronze patch over the sample number.
+  const over = el('div', 'screen over-screen');
   const overBody = el('div', 'screen-body');
-  const overScore = el('p', 'screen-line', 'Score 0'); // main.js writes the run's score into this node
-  const scorePlaque = el('div', 'score-plaque');
-  scorePlaque.append(overScore);
-  overBody.append(
-    el('h1', 'screen-title', 'Game Over'),
-    scorePlaque,
-    el('p', 'screen-prompt', 'Press SPACE to play again'),
-  );
-  over.append(screenFrame(), overBody);
+  const overScore = el('p', 'over-score-value', '0'); // main.js writes the run's score into this node
+  const overPatch = el('div', 'over-patch');
+  overPatch.append(overScore);
+  overBody.append(overPatch);
+  over.append(overBody);
 
   // The one-line hint for the first beats of a run: low contrast, in the middle band between the orchestra
   // and the pillar line, so on any window shape it sits under neither of them.
@@ -199,6 +198,7 @@ export function showRules(ui, visible) {
 }
 
 export function showGameOver(ui, visible, score) {
-  ui.overScore.textContent = `Score ${score}`;
+  ui.overScore.textContent = String(score);
+  ui.over.setAttribute('aria-label', `Game over. Score ${score}. Press SPACE to play again.`);
   ui.over.hidden = !visible;
 }
