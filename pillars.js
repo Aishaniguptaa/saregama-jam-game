@@ -36,13 +36,15 @@ const WALL_TILE_LENGTH = 2.25;         // world units one texture tile covers al
 const WALL_PILASTER_WIDTH = 0.5;       // a full pilaster's width, made of two half-pilasters meeting at the seams
 const WALL_CAP_BAND = 0.4;             // the base and capital moulding band at the foot and head of a pilaster
 const WALL_TEXTURE_PX = 512;           // the carving canvas, drawn once in code, nothing downloaded
-const WALL_ROUGHNESS = 0.95;           // stone is rough, and there is no environment map for a metal to reflect
-const WALL_FACE_COLOR = 0x7c7468;      // the wall stone: a desaturated grey-brown, never gold
+// The stone is deliberately cool. The scene's key light is warm, so a warm grey-brown stone turns orange
+// under it and the wall stops reading as the temple at all: this sits on the cool side of grey, so the
+// light brings it back to neutral stone. Gold is never used here - gold belongs to the pillars' glow.
+const WALL_FACE_COLOR = 0x6b6e6a;      // the wall stone: a cool desaturated grey, never warm
 const WALL_FACE_STYLE = '#' + WALL_FACE_COLOR.toString(16).padStart(6, '0');
-const WALL_PANEL_STYLE = '#655d51';    // the recessed panel, a shade darker where the light does not reach
-const WALL_PILASTER_STYLE = '#8a8174'; // the raised pilaster, catching a little more light
-const WALL_PLINTH_COLOR = 0x6b6459;    // the plinth course, a shade darker than the stone
-const WALL_CORNICE_COLOR = 0x8a8174;   // the cornice band, a shade lighter
+const WALL_PANEL_STYLE = '#43463f';    // the recessed panel: a deep shadow, because at a distance the recess is the carving
+const WALL_PILASTER_STYLE = '#949891'; // the raised pilaster: light enough to stand out against the recess
+const WALL_PLINTH_COLOR = 0x585b56;    // the plinth course, darker than the stone
+const WALL_CORNICE_COLOR = 0x949891;   // the cornice band, lighter, so the wall carries a lit top edge
 
 // --- ONE BAY OF THE WALL, DRAWN IN CODE
 // The whole carving is a canvas texture: no file is downloaded for it. A tile is one bay of the mandapa - a
@@ -80,8 +82,8 @@ function makeWallTexture() {
     const shade = (Math.random() - 0.5) * 0.1;
     ctx.fillStyle = shade > 0 ? `rgba(255,246,228,${shade})` : `rgba(30,26,20,${-shade})`;
     ctx.fillRect(0, py((row + 1) * course), size, course * up);
-    ctx.fillStyle = 'rgba(38,33,27,0.16)';
-    ctx.fillRect(px(Math.random() * WALL_TILE_LENGTH), py((row + 1) * course), 2, course * up);
+    ctx.fillStyle = 'rgba(30,32,28,0.34)';
+    ctx.fillRect(px(Math.random() * WALL_TILE_LENGTH), py((row + 1) * course), 4, course * up);
   }
 
   // weathering: faint vertical streaking, dark and light, that breaks up the repeat
@@ -104,29 +106,29 @@ function makeWallTexture() {
     const x0 = leftHalf ? 0 : size - halfWidth;
     ctx.fillStyle = WALL_PILASTER_STYLE;
     ctx.fillRect(x0, 0, halfWidth, size);
-    ctx.fillStyle = 'rgba(40,35,29,0.1)';      // a wash so the pilaster is not flat
+    ctx.fillStyle = 'rgba(38,40,36,0.18)';     // a wash so the pilaster is not flat
     ctx.fillRect(x0, 0, halfWidth, size * 0.5);
-    ctx.fillStyle = 'rgba(28,24,19,0.35)';     // base and capital moulding lines
-    ctx.fillRect(x0, capTop, halfWidth, 3);
-    ctx.fillRect(x0, capBottom, halfWidth, 3);
-    ctx.fillStyle = 'rgba(20,17,13,0.45)';     // the shadowed joint where it meets the panel
-    ctx.fillRect(leftHalf ? x0 + halfWidth - 3 : x0, 0, 3, size);
-    ctx.fillStyle = 'rgba(230,222,205,0.16)';  // the lit outer edge
-    ctx.fillRect(leftHalf ? x0 : x0 + halfWidth - 2, 0, 2, size);
+    ctx.fillStyle = 'rgba(22,24,21,0.62)';     // base and capital moulding lines: deep and wide, so they carry at a distance
+    ctx.fillRect(x0, capTop, halfWidth, 7);
+    ctx.fillRect(x0, capBottom, halfWidth, 7);
+    ctx.fillStyle = 'rgba(14,16,14,0.75)';     // the shadowed joint where it meets the panel: this line IS the relief
+    ctx.fillRect(leftHalf ? x0 + halfWidth - 7 : x0, 0, 7, size);
+    ctx.fillStyle = 'rgba(236,240,232,0.42)';  // the lit outer edge, so the pilaster catches the light
+    ctx.fillRect(leftHalf ? x0 : x0 + halfWidth - 5, 0, 5, size);
   }
 
   // the panel bevel: lit along the top, shadowed along the foot
-  ctx.fillStyle = 'rgba(235,226,208,0.14)';
-  ctx.fillRect(panelLeft, panelTop, panelRight - panelLeft, 2);
-  ctx.fillStyle = 'rgba(18,15,12,0.4)';
-  ctx.fillRect(panelLeft, panelBottom - 2, panelRight - panelLeft, 2);
+  ctx.fillStyle = 'rgba(236,240,232,0.34)';
+  ctx.fillRect(panelLeft, panelTop, panelRight - panelLeft, 5);
+  ctx.fillStyle = 'rgba(12,14,12,0.62)';
+  ctx.fillRect(panelLeft, panelBottom - 6, panelRight - panelLeft, 6);
 
   // a shallow carved relief in the panel: an inset frame around a small diamond
   const inset = px(0.2);
   const frameTop = panelTop + 0.18 * up;
   const frameBottom = panelBottom - 0.18 * up;
-  ctx.strokeStyle = 'rgba(24,20,16,0.35)';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(14,16,14,0.6)';
+  ctx.lineWidth = 6;
   ctx.strokeRect(panelLeft + inset, frameTop, panelRight - panelLeft - 2 * inset, frameBottom - frameTop);
   const cx = (panelLeft + panelRight) / 2;
   const cy = (frameTop + frameBottom) / 2;
@@ -137,9 +139,9 @@ function makeWallTexture() {
   ctx.lineTo(cx, cy + r);
   ctx.lineTo(cx - r * 0.7, cy);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(24,20,16,0.12)';
+  ctx.fillStyle = 'rgba(14,16,14,0.32)';
   ctx.fill();
-  ctx.strokeStyle = 'rgba(24,20,16,0.3)';
+  ctx.strokeStyle = 'rgba(14,16,14,0.6)';
   ctx.stroke();
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -217,14 +219,14 @@ export function createField(scene, makeLabel, camera = null) {
   // Each side is a pool of identical segments that tile edge to edge and recycle like the old stones, so
   // the wall is endless and no piece is ever seen to pop or vanish mid-frame.
   const wallTexture = makeWallTexture();
-  const wallFaceMaterial = new THREE.MeshStandardMaterial({
+  // Lambert, like the floor, the paving and the pillars: the walls then take the scene's light exactly the
+  // way the rest of the temple does, instead of sitting in it looking like a separate material.
+  const wallFaceMaterial = new THREE.MeshLambertMaterial({
     map: wallTexture,
     color: wallTexture === null ? WALL_FACE_COLOR : 0xffffff, // the map carries the colour; the fallback is flat stone
-    roughness: WALL_ROUGHNESS,
-    metalness: 0,
   });
-  const wallPlinthMaterial = new THREE.MeshStandardMaterial({ color: WALL_PLINTH_COLOR, roughness: WALL_ROUGHNESS, metalness: 0 });
-  const wallCorniceMaterial = new THREE.MeshStandardMaterial({ color: WALL_CORNICE_COLOR, roughness: WALL_ROUGHNESS, metalness: 0 });
+  const wallPlinthMaterial = new THREE.MeshLambertMaterial({ color: WALL_PLINTH_COLOR });
+  const wallCorniceMaterial = new THREE.MeshLambertMaterial({ color: WALL_CORNICE_COLOR });
 
   const plinthGeometry = new THREE.BoxGeometry(WALL_THICKNESS + WALL_PLINTH_PROJECT, WALL_PLINTH_HEIGHT, WALL_SEGMENT_LENGTH);
   const wallFaceGeometry = new THREE.BoxGeometry(WALL_THICKNESS, WALL_FACE_HEIGHT, WALL_SEGMENT_LENGTH);
