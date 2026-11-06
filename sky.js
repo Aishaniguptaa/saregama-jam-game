@@ -37,6 +37,20 @@ const CLOUD_BANDS = [
 const CLOUD_PUFF_RX = 0.16;       // one puff is this wide, of the canvas width...
 const CLOUD_PUFF_RY = 0.035;      // ...and this tall, of the canvas height
 
+// --- THE CLOUD BANDS of the opening dusk stage: soft pink, gold and warm-white rows laid across the middle
+// of the frame, above the horizon haze, so stage 0 reads like the makers' golden-hour Hampi reference. They
+// reuse the air stage's puff stamps, only wider, warmer, and drawn from their own seed (see DUSK_CLOUD_SEED).
+const DUSK_CLOUD_BANDS = [
+  { y: 0.30, puffs: 6, spread: 0.20, size: 1.20, alpha: 0.20, jitter: 0.030, glowKey: 'cloudPink' },
+  { y: 0.39, puffs: 8, spread: 0.24, size: 1.00, alpha: 0.17, jitter: 0.035, glowKey: 'cloudGold' },
+  { y: 0.48, puffs: 7, spread: 0.20, size: 0.85, alpha: 0.14, jitter: 0.030, glowKey: 'cloudWarm' },
+];
+const DUSK_PUFF_RX = 0.17;        // one dusk puff is this wide, of the canvas width...
+const DUSK_PUFF_RY = 0.032;       // ...and this tall, of the canvas height: long soft bands, not ovals
+const DUSK_PUFF_EDGE = 0.06;      // a band's puffs start this far in from the left edge of the frame...
+const DUSK_PUFF_SPAN = 0.88;      // ...and run this share of the canvas width across to the right
+const DUSK_CLOUD_SEED = 0x0d05c10d; // its own fixed seed, so these bands never shift the other stages' stars
+
 // --- THE GALAXY of the fourth stage: one soft smear with a brighter core, on a shallow diagonal
 const GALAXY_TILT = -0.42;        // how far the band leans across the canvas, in radians
 const GALAXY_CX = 0.52;           // where the band crosses, across the canvas
@@ -71,12 +85,12 @@ const NEBULA_DUST_THICK = 0.05;   // and is this thin, of the canvas height
 
 // --- THE FIVE STAGES, each one further from the world than the last: dusk over Hampi, up through the air,
 // the airless dark, the galaxies, and the nebula field. Each stage is a sky gradient from the top of the
-// frame down. They run into one another on purpose: the overhead goes violet, blue, then dark, and the
+// frame down. They run into one another on purpose: the overhead goes deep blue, blue, then dark, and the
 // horizon goes warm amber, hazy white, dim blue, then darker and darker - so the five read as one journey
 // and not five pictures. A stage's gradient and its horizon colour below ship together, index for index.
 const STAGE_STOPS = [
-  [ // 0 — dusk over Hampi: warm amber low, deep blue-violet overhead
-    [0.0, '#241d3f'], [0.24, '#40325f'], [0.42, '#7c4a6b'], [0.54, '#b96250'],
+  [ // 0 — dusk over Hampi: blue overhead, pink and soft orange through the middle, warm amber low
+    [0.0, '#1d2a58'], [0.24, '#3a4a86'], [0.42, '#8e5178'], [0.54, '#c0655c'],
     [0.62, '#e0913f'], [0.7, '#f0b26a'], [0.82, '#8a4d31'], [1.0, '#38220f'],
   ],
   [ // 1 — up through the air: pale blue overhead fading to hazy white at the horizon
@@ -135,12 +149,17 @@ function bandGradient(ctx, top, bottom, colour) {
   return gradient;
 }
 
-// --- THE SHARED SOFT GLOWS: one white, one warm for the sun, the two that make up the galaxy band, the
-// four cold colours the nebula clouds take, and the dark of the dust lane that cuts across them
+// --- THE SHARED SOFT GLOWS: one white, one warm for the sun, the three warm tints the dusk clouds take, the
+// two that make up the galaxy band, the four cold colours the nebula clouds take, and the dark of the dust
+// lane that cuts across them. The dusk tints stay soft and never gold-bright: the pillars' glow is the
+// brightest warm thing on screen.
 function buildGlows(ctx) {
   return {
     white: softGlow(ctx, 'rgba(255, 255, 255, 0.85)', 'rgba(255, 255, 255, 0)'),
     warm: softGlow(ctx, 'rgba(255, 228, 182, 0.85)', 'rgba(255, 190, 120, 0)'),
+    cloudPink: softGlow(ctx, 'rgba(244, 170, 190, 0.78)', 'rgba(206, 108, 140, 0)'),
+    cloudGold: softGlow(ctx, 'rgba(255, 212, 150, 0.78)', 'rgba(238, 166, 96, 0)'),
+    cloudWarm: softGlow(ctx, 'rgba(255, 238, 224, 0.72)', 'rgba(228, 186, 168, 0)'),
     galaxy: softGlow(ctx, 'rgba(206, 217, 255, 0.5)', 'rgba(150, 170, 255, 0)'),
     galaxyCore: softGlow(ctx, 'rgba(238, 243, 255, 0.85)', 'rgba(190, 205, 255, 0)'),
     magenta: softGlow(ctx, 'rgba(214, 96, 176, 0.5)', 'rgba(140, 40, 130, 0)'),
@@ -246,15 +265,37 @@ function buildClouds(random) {
   return puffs;
 }
 
+// --- THE DUSK CLOUD PUFFS of the opening stage, built once from their own seed: warm rows of long, soft,
+// overlapping puffs, uneven in place, size and strength, each carrying the tint its band chose.
+function buildDuskClouds(random) {
+  const puffs = [];
+  for (const band of DUSK_CLOUD_BANDS) {
+    for (let i = 0; i < band.puffs; i += 1) {
+      const along = band.puffs === 1 ? 0.5 : i / (band.puffs - 1);
+      puffs.push({
+        glowKey: band.glowKey,
+        x: (DUSK_PUFF_EDGE + DUSK_PUFF_SPAN * along + (random() - 0.5) * band.spread) * CANVAS_W,
+        y: (band.y + (random() - 0.5) * band.jitter) * CANVAS_H,
+        rx: DUSK_PUFF_RX * band.size * (0.7 + random() * 0.7) * CANVAS_W,
+        ry: DUSK_PUFF_RY * band.size * (0.7 + random() * 0.7) * CANVAS_H,
+        alpha: band.alpha * (0.6 + random() * 0.6),
+      });
+    }
+  }
+  return puffs;
+}
+
 // --- EVERY STAGE'S DRAWING KIT, made once when the sky is built: a sky gradient, plus whatever that
 // stage adds on top of it. Nothing here is ever rebuilt, so a fade allocates nothing at all.
 function buildStyles(ctx) {
   const random = makeRandom(STAR_SEED);
+  const duskRandom = makeRandom(DUSK_CLOUD_SEED); // its own stream, so stage 0 draws nothing from `random`
   return STAGE_STOPS.map((stops, stage) => {
     const style = { sky: verticalGradient(ctx, stops) };
     if (stage === 0) {
       style.sunGlow = true;
       style.haze = bandGradient(ctx, HAZE_TOP, HAZE_BOTTOM, WARM_HAZE_COLOUR);
+      style.duskClouds = buildDuskClouds(duskRandom);
     } else if (stage === 1) {
       style.clouds = buildClouds(random);
     } else if (stage === 2) {
@@ -320,6 +361,11 @@ function paintClouds(ctx, glows, puffs, baseAlpha) {
   for (const puff of puffs) stamp(ctx, glows.white, puff.x, puff.y, puff.rx, puff.ry, puff.alpha * baseAlpha);
 }
 
+// The opening stage's cloud bands: each puff laid in the warm tint its band chose, layered front to back.
+function paintDuskClouds(ctx, glows, puffs, baseAlpha) {
+  for (const puff of puffs) stamp(ctx, glows[puff.glowKey], puff.x, puff.y, puff.rx, puff.ry, puff.alpha * baseAlpha);
+}
+
 // --- ONE STAGE ONTO THE CANVAS, at an overall strength: the sky first, then whatever this stage lays on
 // it. A crossfade is this same function run twice, the newcomer over the stage being left.
 function paintStage(ctx, glows, style, baseAlpha) {
@@ -337,6 +383,7 @@ function paintStage(ctx, glows, style, baseAlpha) {
     ctx.fillStyle = style.haze;
     ctx.fillRect(0, HAZE_TOP * CANVAS_H, CANVAS_W, (HAZE_BOTTOM - HAZE_TOP) * CANVAS_H);
   }
+  if (style.duskClouds) paintDuskClouds(ctx, glows, style.duskClouds, baseAlpha);
   if (style.clouds) paintClouds(ctx, glows, style.clouds, baseAlpha);
   if (style.stars) paintStars(ctx, style.stars, baseAlpha);
   if (style.galaxy) paintGalaxy(ctx, glows, baseAlpha);
