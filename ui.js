@@ -53,23 +53,53 @@ export function createUI(root) {
   area.append(areaTitle, list);
 
   const legend = KEYS.map((key, i) => `${key.toUpperCase()} ${SWARAS[i]}`).join('   ');
+  // The gold frame every screen wears: an outer rule, an inner rule and a gold spur at each corner. The
+  // temple keeps playing behind the scrim, so these are decor only - hidden from screen readers.
+  function screenFrame() {
+    const frame = el('div', 'screen-frame');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.append(
+      el('i', 'frame-corner c-tl'), el('i', 'frame-corner c-tr'),
+      el('i', 'frame-corner c-bl'), el('i', 'frame-corner c-br'),
+    );
+    return frame;
+  }
+
+  // The small rule under the title: two tapering lines, two studs and a diamond gem at the centre.
+  const titleOrnament = el('div', 'title-ornament');
+  titleOrnament.setAttribute('aria-hidden', 'true');
+  titleOrnament.append(
+    el('span', 'orn-line orn-line-left'),
+    el('span', 'orn-dot'),
+    el('span', 'orn-gem'),
+    el('span', 'orn-dot'),
+    el('span', 'orn-line orn-line-right'),
+  );
+
   const title = el('div', 'screen');
-  title.append(
+  const titleBody = el('div', 'screen-body');
+  titleBody.append(
     el('h1', 'screen-title', 'SaReGaMa'),
+    titleOrnament,
     el('p', 'screen-line', legend),
     el('p', 'screen-line', 'The pillars travel past you on the right. When one lights up, press its key.'),
     el('p', 'screen-line', 'The right key always scores. A wrong key costs a life. Nothing else does.'),
     el('p', 'screen-line', 'Every note you land is played by your orchestra.'),
     el('p', 'screen-prompt', 'Press SPACE to begin'),
   );
+  title.append(screenFrame(), titleBody);
 
   const over = el('div', 'screen');
-  const overScore = el('p', 'screen-line', 'Score 0');
-  over.append(
+  const overBody = el('div', 'screen-body');
+  const overScore = el('p', 'screen-line', 'Score 0'); // main.js writes the run's score into this node
+  const scorePlaque = el('div', 'score-plaque');
+  scorePlaque.append(overScore);
+  overBody.append(
     el('h1', 'screen-title', 'Game Over'),
-    overScore,
+    scorePlaque,
     el('p', 'screen-prompt', 'Press SPACE to play again'),
   );
+  over.append(screenFrame(), overBody);
 
   // The one-line hint for the first beats of a run: low contrast, in the middle band between the orchestra
   // and the pillar line, so on any window shape it sits under neither of them.

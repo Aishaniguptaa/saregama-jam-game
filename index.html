@@ -17,19 +17,67 @@
     .hud { display: flex; justify-content: space-between; gap: 1rem; padding: 14px 18px;
       font-variant-numeric: tabular-nums; }
     .hud-combo { flex: 1; text-align: center; }
+    /* ---- Title and game-over screens: the live temple behind, framed in gold ----
+       These screens are a soft scrim, not a wall: the 3D temple keeps playing behind them. A focal
+       plate darkens the middle enough that the gold title and cream lines read crisply even if a bright
+       pillar passes behind, while the edges fall away and the space around the words stays partly clear. */
     .screen { position: absolute; inset: 0; display: grid; place-content: center; gap: 0.5em;
       padding: 2rem; text-align: center;
-      background: linear-gradient(180deg, rgba(30, 20, 52, 0.92), rgba(14, 10, 26, 0.94)); }
+      background:
+        radial-gradient(60% 48% at 50% 50%, rgba(9, 6, 17, 0.74) 0%, rgba(9, 6, 17, 0.5) 58%, rgba(9, 6, 17, 0) 100%),
+        radial-gradient(125% 100% at 50% 50%, rgba(12, 8, 22, 0.46) 0%, rgba(9, 6, 17, 0.6) 62%, rgba(5, 3, 10, 0.92) 100%); }
     .screen[hidden] { display: none; }
     /* Display headings: the makers' temple gold serif, uppercase, with a warm glow behind it */
     .screen-title { margin: 0 0 0.4em;
       font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
       font-size: 2.4rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
       color: #f2c66d; text-shadow: 0 0 18px rgba(255, 190, 110, 0.55), 0 2px 0 rgba(90, 50, 10, 0.6); }
-    .screen-line { margin: 0; opacity: 0.85; color: #ecd9b4; }
-    /* The prompt reads as small caps in a deeper gold, still clearly readable on the indigo */
-    .screen-prompt { margin: 1.6em 0 0; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.18em;
-      color: #d9a441; text-shadow: 0 0 12px rgba(255, 190, 110, 0.45); }
+    /* The words sit inside the frame, held to a readable column whatever the window shape */
+    .screen-body { position: relative; z-index: 1; display: grid; justify-items: center; gap: 0.5em;
+      max-width: min(88vw, 44rem); padding: 0 clamp(0.5rem, 4vw, 3rem); }
+    /* The inset gold frame: an outer hairline rule, a second rule just inside it, and a small gold spur
+       at each corner. Thin on purpose, so it frames the words without competing with them. */
+    .screen-frame { position: absolute; inset: 18px; pointer-events: none; border-radius: 3px;
+      border: 1px solid rgba(226, 178, 96, 0.55); }
+    .screen-frame::before { content: ''; position: absolute; inset: 6px; border-radius: 2px;
+      border: 1px solid rgba(226, 178, 96, 0.28); }
+    .frame-corner { position: absolute; width: 16px; height: 16px; }
+    .frame-corner.c-tl { top: -2px; left: -2px; border-top: 2px solid #e6b96a; border-left: 2px solid #e6b96a; }
+    .frame-corner.c-tr { top: -2px; right: -2px; border-top: 2px solid #e6b96a; border-right: 2px solid #e6b96a; }
+    .frame-corner.c-bl { bottom: -2px; left: -2px; border-bottom: 2px solid #e6b96a; border-left: 2px solid #e6b96a; }
+    .frame-corner.c-br { bottom: -2px; right: -2px; border-bottom: 2px solid #e6b96a; border-right: 2px solid #e6b96a; }
+    .screen-line { margin: 0; opacity: 0.85; color: #ecd9b4;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 12px rgba(0, 0, 0, 0.55); }
+    /* Rule under the title: two tapering gold lines meeting two small gold studs around a diamond gem. */
+    .title-ornament { display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: min(70%, 20rem); margin: 0.1em auto 1.1em; }
+    .orn-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(226, 178, 96, 0) 0%, rgba(226, 178, 96, 0.85) 100%); }
+    .orn-line-right { background: linear-gradient(270deg, rgba(226, 178, 96, 0) 0%, rgba(226, 178, 96, 0.85) 100%); }
+    .orn-dot { width: 5px; height: 5px; transform: rotate(45deg); background: #e6b96a;
+      box-shadow: 0 0 6px rgba(255, 200, 120, 0.7); }
+    .orn-gem { position: relative; width: 12px; height: 12px; transform: rotate(45deg);
+      background: linear-gradient(135deg, #f6d68c, #c8903a); box-shadow: 0 0 10px rgba(255, 200, 120, 0.75); }
+    .orn-gem::after { content: ''; position: absolute; inset: 3px; background: #2a1c10;
+      box-shadow: inset 0 0 0 1px rgba(246, 214, 140, 0.9); }
+    /* The prompt as a stone-plaque bar: a gold double rule around a dark stone fill. */
+    .screen-prompt { position: relative; display: inline-block; margin: 1.9em auto 0; padding: 0.7em 2.1em;
+      opacity: 1; text-transform: uppercase; letter-spacing: 0.18em; color: #f0cd84; border-radius: 12px;
+      border: 1px solid rgba(230, 185, 106, 0.9);
+      background: linear-gradient(180deg, rgba(38, 29, 52, 0.94), rgba(14, 10, 24, 0.96));
+      box-shadow: inset 0 1px 0 rgba(255, 226, 160, 0.25), 0 2px 12px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 0 12px rgba(255, 190, 110, 0.45), 0 1px 2px rgba(0, 0, 0, 0.7); }
+    .screen-prompt::before { content: ''; position: absolute; inset: 3px; border-radius: 9px; pointer-events: none;
+      border: 1px solid rgba(230, 185, 106, 0.4); }
+    /* The game-over score badge, framed a step more strongly than the prompt plaque. */
+    .score-plaque { position: relative; display: grid; place-items: center; margin: 0.5em auto 0.3em;
+      padding: 0.6em 1.9em; border-radius: 10px; border: 1px solid rgba(236, 196, 116, 0.95);
+      background: linear-gradient(180deg, rgba(40, 30, 56, 0.94), rgba(13, 9, 22, 0.96));
+      box-shadow: inset 0 0 0 3px rgba(19, 13, 30, 0.85), inset 0 1px 0 rgba(255, 232, 170, 0.3),
+        0 3px 16px rgba(0, 0, 0, 0.55); }
+    .score-plaque::before { content: ''; position: absolute; inset: 5px; border-radius: 6px; pointer-events: none;
+      border: 1px solid rgba(236, 196, 116, 0.5); }
+    .score-plaque .screen-line { margin: 0; opacity: 1; font-size: 1.5rem; letter-spacing: 0.14em; color: #f6d78e;
+      text-shadow: 0 0 14px rgba(255, 190, 110, 0.5), 0 1px 2px rgba(0, 0, 0, 0.75); }
   </style>
   <!-- three.js comes from a CDN, pinned to one version. No install needed. -->
   <script type="importmap">
