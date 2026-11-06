@@ -3,8 +3,8 @@
   "handle": "saregama",
   "description": "An Indian dancer at the Vijayanagara temple of Hampi taps the seven musical pillars on the beat, building an orchestra of real instruments and opening portals into outer space.",
   "assets": [
-    { "file": "assets/homescreen.jpeg", "source": "Made by the saregama team (ag, nc)", "license": "Own work — created by the team for this game" },
-    { "file": "assets/gameover.jpeg", "source": "Made by the saregama team (ag, nc)", "license": "Own work — created by the team for this game" },
+    { "file": "assets/homescreen.jpeg", "source": "ChatGPT image generator, from the team's prompt \"make me the home screen and game over page for my game\"; artwork then worked on by nc", "license": "AI-generated (ChatGPT), used by the team under OpenAI's terms; no third-party artwork" },
+    { "file": "assets/gameover.jpeg", "source": "ChatGPT image generator, from the team's prompt \"make me the home screen and game over page for my game\"; artwork then worked on by nc", "license": "AI-generated (ChatGPT), used by the team under OpenAI's terms; no third-party artwork" },
     { "file": "assets/audio/tabla.mp3", "source": "https://freesound.org/people/Sh%C5%8Dtotsu/sounds/689550/", "license": "CC0 1.0" },
     { "file": "assets/audio/sitar.mp3", "source": "https://freesound.org/people/zgump/sounds/87436/", "license": "CC0 1.0" },
     { "file": "assets/audio/flute.mp3", "source": "https://freesound.org/people/sankalp/sounds/179696/", "license": "CC BY 4.0 — credit: sankalp" },
