@@ -6,6 +6,15 @@ import {
   PILLAR_LABEL_WIDTH,
 } from './tuning.js';
 
+// --- THE GLOW: a warm halo painted into the same canvas as the letter, so a lit key reads as luminous
+// rather than printed. Because it lives in the texture it costs nothing per frame and it rises and falls
+// with the label's own opacity, exactly in step with the pillar's light.
+const GLOW_INNER = 'rgba(255, 240, 198, 0.95)'; // the hot core, right behind the glyph
+const GLOW_MID = 'rgba(255, 198, 104, 0.5)';    // the warm body of the halo
+const GLOW_OUTER = 'rgba(255, 150, 40, 0)';     // its soft edge, fading to nothing so the square never shows
+const GLOW_RADIUS = 0.5;                        // the halo's radius as a share of the canvas
+const GLOW_CORE_STOP = 0.4;                     // how far out the bright core holds before it starts to fall
+
 // --- ONE LABEL: the key letter alone, drawn as large as the canvas will hold, and stroked dark before it is
 // filled so it reads both on dim stone and on the pillar's own glow. The swara is not here: it belongs to
 // the title screen's legend. The glyph is measured and scaled to LABEL_GLYPH_SHARE of the canvas, so every
@@ -18,6 +27,15 @@ function drawKey(key) {
   ctx.font = LABEL_FONT;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+
+  // the halo, painted first and in canvas space so it sits behind the glyph and reaches the plate's edge
+  const centre = LABEL_CANVAS_PX / 2;
+  const glow = ctx.createRadialGradient(centre, centre, 0, centre, centre, LABEL_CANVAS_PX * GLOW_RADIUS);
+  glow.addColorStop(0, GLOW_INNER);
+  glow.addColorStop(GLOW_CORE_STOP, GLOW_MID);
+  glow.addColorStop(1, GLOW_OUTER);
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, LABEL_CANVAS_PX, LABEL_CANVAS_PX);
 
   const metrics = ctx.measureText(key);
   const wide = Math.max(1, metrics.width);
