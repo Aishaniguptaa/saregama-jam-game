@@ -13,6 +13,7 @@
   ],
   "ai_assets": [
     "assets/temple-facade.svg",
+    "assets/temple-wall.svg",
     "assets/models/pillar1.glb",
     "assets/models/pillar2.glb",
     "assets/models/pillar3.glb",

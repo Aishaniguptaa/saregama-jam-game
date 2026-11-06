@@ -41,30 +41,20 @@ const WALL_SEGMENT_LENGTH = 9;         // world units each piece runs down the c
 const WALL_SPAN = WALL_SEGMENT_COUNT * WALL_SEGMENT_LENGTH; // how far the pool reaches before it wraps
 const WALL_WRAP_Z = HALL_WRAP_Z - WALL_SEGMENT_LENGTH / 2;  // a piece wraps when its leading edge reaches the hall's wrap line
 const WALL_TILE_LENGTH = 2.25;         // world units one texture tile covers along the run
-const WALL_PILASTER_WIDTH = 0.5;       // a full pilaster's width, made of two half-pilasters meeting at the seams
-const WALL_CAP_BAND = 0.4;             // the base and capital moulding band at the foot and head of a pilaster
-const WALL_FRIEZE_HEIGHT = 0.6;        // the decorated band under the cornice, carved out of the same face
-const WALL_FRIEZE_MOTIF_COUNT = 4;     // carved motifs repeated across one bay of the frieze
-const WALL_FRIEZE_MOTIF_WIDTH = 0.46;  // how much of its slot across a motif's carved block fills
-const WALL_FRIEZE_MOTIF_HEIGHT = 0.56; // how much of the band's height a motif's carved block fills
-const WALL_FRIEZE_DIAMOND = 0.34;      // the diamond cut into each block, as a share of the block's smaller side
-const WALL_TEXTURE_PX = 512;           // the carving canvas, drawn once in code, nothing downloaded
+const WALL_TEXTURE_PX = 512;           // the carving canvas: one bay of the wall, drawn 512 square in the file
 // The stone is warm sunlit sandstone, sampled from the golden-hour photograph of the temple the makers
 // supplied. The scene's key light is warm as well, and that is wanted: it lands these tones where the
 // photograph has them, the sunlit face bright and the recesses a deep brown. Every tone stays in that
 // sandstone brown family and is pulled back from gold - the gold belongs to the pillars' glow, never here.
 const WALL_FACE_COLOR = 0xb08d63;      // the wall stone: warm sunlit sandstone, matched to the photograph
 const WALL_FACE_STYLE = '#' + WALL_FACE_COLOR.toString(16).padStart(6, '0');
-const WALL_PANEL_STYLE = '#6a4d2f';    // the recessed panel: a deep warm shadow; at a distance the recess is the carving
-const WALL_FRIEZE_STYLE = '#9a7850';   // the frieze ground: a shade darker than the face, so the band reads
-const WALL_PILASTER_STYLE = '#c2a077'; // the raised pilaster, lightened: it must stand out against the recess
 const WALL_PLINTH_COLOR = 0x8a6a45;    // the plinth course, darker than the stone
 const WALL_MOULDING_COLOR = 0xa5825a;  // the moulding step over the plinth: mid sandstone, between plinth and face
 const WALL_CORNICE_COLOR = 0xc9a273;   // the cornice band, lighter, so the wall carries a lit top edge
 const WALL_SHADOW_COLOR = 0x6b4f31;    // the groove beneath the capstone: the wall's deepest shadow line
 const WALL_CAPSTONE_COLOR = 0xd8b489;  // the lit capstone along the top: the lightest stone on the wall
 
-// --- THE FLOOR PAVING: the stone courtyard the whole temple stands on, drawn in code like the walls.
+// --- THE FLOOR PAVING: the stone courtyard the whole temple stands on, drawn in code.
 // The same stone as the wall face, one shade darker: warm sunlit sandstone paving, so the floor and the
 // walls read as one temple standing in the same warm key light, exactly as in the photograph.
 const FLOOR_TEXTURE_PX = 512;         // the paving canvas, drawn once in code, nothing downloaded
@@ -78,12 +68,15 @@ const FLOOR_TEXTURE_ANISOTROPY = 8;   // keeps the paving readable at the grazin
 const FLOOR_STONE_COLOR = 0x9c7a52;   // the paving stone, and the paving bands: warm sandstone, a touch darker than the face
 const FLOOR_STONE_STYLE = '#' + FLOOR_STONE_COLOR.toString(16).padStart(6, '0');
 
-// --- ONE BAY OF THE WALL, DRAWN IN CODE
-// The whole carving is a canvas texture: no file is downloaded for it. A tile is one bay of the mandapa - a
-// pilaster down each edge (two halves that meet to make one pilaster where two tiles join) and a recessed
-// panel between them, over block courses with a little vertical weathering so the repeat is hard to spot.
-// A decorated frieze carries across the top of the bay, under the cornice. Warm sunlit sandstone, like the
-// stone around it: the gold belongs to the pillar glow and never appears on the walls.
+// --- ONE BAY OF THE WALL, LOADED FROM THE MAKERS' DRAWING
+// The carving is one file, assets/temple-wall.svg: a single bay of the wall in the makers' sandstone, drawn
+// 512 square as text and painted whole onto this canvas. That bay is what the face is built from - one tile
+// of wall along the run, over the full height of the carved face - so the whole canvas is one tile of the
+// repeat below: two bays meeting at the canvas's left and right edges make one whole pilaster between them,
+// which is why the drawing carries half a pilaster down each edge and nothing steps across the join.
+// The canvas starts as the wall's own flat stone and the carving is laid over it the moment the file
+// arrives. Nothing blocks a frame on it: before it arrives, and if it never arrives at all, the wall is the
+// face colour the rest of the temple is built in - never an untextured or black wall.
 function makeWallTexture() {
   const size = WALL_TEXTURE_PX;
   const canvas = document.createElement('canvas');
@@ -91,141 +84,27 @@ function makeWallTexture() {
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (ctx === null) return null;            // no canvas: the walls fall back to flat stone, never an error
-  const across = size / WALL_TILE_LENGTH;   // pixels per world unit along the run
-  const up = size / WALL_FACE_HEIGHT;       // pixels per world unit up the wall
-  const px = (world) => world * across;
-  const py = (world) => size - world * up;  // world height measured up from the foot
-
-  // the carving - pilasters and recessed panels - stops here, and the decorated frieze runs above it,
-  // so the frieze carries across the pilaster heads the way an entablature carries across a colonnade
-  const carveTop = WALL_FACE_HEIGHT - WALL_FRIEZE_HEIGHT;
-
-  // the stone ground
-  ctx.fillStyle = WALL_FACE_STYLE;
+  ctx.fillStyle = WALL_FACE_STYLE;          // the flat stone the wall wears until the carving arrives
   ctx.fillRect(0, 0, size, size);
-
-  // the recessed panel between the two half-pilasters
-  const panelLeft = px(WALL_PILASTER_WIDTH / 2);
-  const panelRight = px(WALL_TILE_LENGTH - WALL_PILASTER_WIDTH / 2);
-  const panelTop = py(carveTop - WALL_CAP_BAND);
-  const panelBottom = py(WALL_CAP_BAND);
-  ctx.fillStyle = WALL_PANEL_STYLE;
-  ctx.fillRect(panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop);
-
-  // block courses: a shallow tonal step between rows and a staggered joint, so the stone reads as many
-  // blocks rather than one slab
-  const course = 0.45; // world units per course
-  for (let row = 0; row * course < WALL_FACE_HEIGHT; row++) {
-    const shade = (Math.random() - 0.5) * 0.1;
-    ctx.fillStyle = shade > 0 ? `rgba(255,246,228,${shade})` : `rgba(30,26,20,${-shade})`;
-    ctx.fillRect(0, py((row + 1) * course), size, course * up);
-    ctx.fillStyle = 'rgba(46,32,16,0.34)';
-    ctx.fillRect(px(Math.random() * WALL_TILE_LENGTH), py((row + 1) * course), 4, course * up);
-  }
-
-  // weathering: faint vertical streaking, dark and light, that breaks up the repeat
-  for (let i = 0; i < 16; i++) {
-    const sx = Math.random() * size;
-    const w = (0.04 + Math.random() * 0.12) * across;
-    const alpha = 0.04 + Math.random() * 0.07;
-    const grad = ctx.createLinearGradient(sx, 0, sx + w, 0);
-    grad.addColorStop(0, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, Math.random() < 0.6 ? `rgba(34,29,23,${alpha})` : `rgba(222,213,194,${alpha})`);
-    ctx.fillStyle = grad;
-    ctx.fillRect(sx, 0, w, size);
-  }
-
-  // the pilasters: each tile carries half a pilaster at either edge, so two tiles meet to make a whole
-  // one. The relief is pushed hard - a deep shadow line into the panel, a bright lit edge on the outer
-  // corner - because at the low angle the wall is seen from, that contrast is what reads as carving.
-  const halfWidth = px(WALL_PILASTER_WIDTH / 2);
-  const capTop = py(carveTop - WALL_CAP_BAND);
-  const capBottom = py(WALL_CAP_BAND);
-  for (const leftHalf of [true, false]) {
-    const x0 = leftHalf ? 0 : size - halfWidth;
-    ctx.fillStyle = WALL_PILASTER_STYLE;
-    ctx.fillRect(x0, capTop, halfWidth, size - capTop);
-    ctx.fillStyle = 'rgba(56,40,20,0.18)';     // a wash so the pilaster is not flat
-    ctx.fillRect(x0, capTop, halfWidth, (size - capTop) * 0.5);
-    ctx.fillStyle = 'rgba(44,29,14,0.74)';     // base and capital moulding lines: deeper and wider than before
-    ctx.fillRect(x0, capTop, halfWidth, 8);
-    ctx.fillRect(x0, capBottom, halfWidth, 8);
-    ctx.fillStyle = 'rgba(28,18,8,0.9)';       // the shadowed joint where it meets the panel: this line IS the relief
-    ctx.fillRect(leftHalf ? x0 + halfWidth - 10 : x0, capTop, 10, size - capTop);
-    ctx.fillStyle = 'rgba(255,236,200,0.6)';   // the lit outer edge, raised again: the pilaster catches the light
-    ctx.fillRect(leftHalf ? x0 : x0 + halfWidth - 7, capTop, 7, size - capTop);
-  }
-
-  // the panel bevel: lit along the top, shadowed along the foot, both pushed harder than before
-  ctx.fillStyle = 'rgba(255,233,193,0.5)';
-  ctx.fillRect(panelLeft, panelTop, panelRight - panelLeft, 6);
-  ctx.fillStyle = 'rgba(28,18,8,0.78)';
-  ctx.fillRect(panelLeft, panelBottom - 8, panelRight - panelLeft, 8);
-
-  // a shallow carved relief in the panel: an inset frame around a small diamond
-  const inset = px(0.2);
-  const frameTop = panelTop + 0.18 * up;
-  const frameBottom = panelBottom - 0.18 * up;
-  ctx.strokeStyle = 'rgba(38,25,12,0.6)';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(panelLeft + inset, frameTop, panelRight - panelLeft - 2 * inset, frameBottom - frameTop);
-  const cx = (panelLeft + panelRight) / 2;
-  const cy = (frameTop + frameBottom) / 2;
-  const r = Math.min((panelRight - panelLeft) * 0.18, (frameBottom - frameTop) * 0.2);
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - r);
-  ctx.lineTo(cx + r * 0.7, cy);
-  ctx.lineTo(cx, cy + r);
-  ctx.lineTo(cx - r * 0.7, cy);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(32,21,10,0.42)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(32,21,10,0.72)';
-  ctx.stroke();
-
-  // the frieze: a continuous decorated band under the cornice, painted over the pilaster heads, so it runs
-  // the whole length of the wall with the lit order above it and a shadow at its foot to read as raised
-  const friezeTop = py(WALL_FACE_HEIGHT);
-  const friezeBottom = py(carveTop);
-  ctx.fillStyle = WALL_FRIEZE_STYLE;
-  ctx.fillRect(0, friezeTop, size, friezeBottom - friezeTop);
-  ctx.fillStyle = 'rgba(255,233,193,0.36)';                 // the lit upper order of the band
-  ctx.fillRect(0, friezeTop, size, 4);
-  ctx.fillStyle = 'rgba(28,18,8,0.7)';                      // the shadow at its foot, so the band stands proud
-  ctx.fillRect(0, friezeBottom - 6, size, 6);
-
-  // the motifs on it: a raised block with a diamond cut into it, repeated along the band, each lit from
-  // the upper left and shadowed to the lower right so the carving reads at a distance
-  const motifW = (size / WALL_FRIEZE_MOTIF_COUNT) * WALL_FRIEZE_MOTIF_WIDTH;
-  const motifH = (friezeBottom - friezeTop) * WALL_FRIEZE_MOTIF_HEIGHT;
-  const motifY = (friezeTop + friezeBottom) / 2 - motifH / 2;
-  for (let i = 0; i < WALL_FRIEZE_MOTIF_COUNT; i++) {
-    const motifX = ((i + 0.5) * size) / WALL_FRIEZE_MOTIF_COUNT - motifW / 2;
-    ctx.fillStyle = 'rgba(28,18,8,0.5)';
-    ctx.fillRect(motifX + 4, motifY + 4, motifW, motifH);    // the block's own cast shadow, down and to the right
-    ctx.fillStyle = 'rgba(255,229,186,0.34)';
-    ctx.fillRect(motifX, motifY, motifW, motifH);            // the lit face of the block
-    const dx = motifX + motifW / 2;
-    const dy = motifY + motifH / 2;
-    const dr = Math.min(motifW, motifH) * WALL_FRIEZE_DIAMOND;
-    ctx.beginPath();                                         // the diamond cut into the block
-    ctx.moveTo(dx, dy - dr);
-    ctx.lineTo(dx + dr * 0.7, dy);
-    ctx.lineTo(dx, dy + dr);
-    ctx.lineTo(dx - dr * 0.7, dy);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(28,18,8,0.42)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(28,18,8,0.72)';
-    ctx.lineWidth = 4;
-    ctx.stroke();
-  }
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(WALL_SEGMENT_LENGTH / WALL_TILE_LENGTH, 1); // whole tiles along the run, one tile tall
   texture.colorSpace = THREE.SRGBColorSpace;
+  // The wall is only ever seen at a grazing angle, so its bays would smear into flat mip levels without
+  // this and the carving would stop reading at any distance. The floor asks for the same thing, for the
+  // same reason, from FLOOR_TEXTURE_ANISOTROPY.
+  texture.anisotropy = FLOOR_TEXTURE_ANISOTROPY;
+
+  // the drawing arrives on its own time: the whole bay laid over the stone in one go, and the texture
+  // then told to upload again. Until it does, and if it never does, the wall is the flat stone above.
+  const img = new Image();
+  img.src = './assets/temple-wall.svg';
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, size, size);   // one whole bay, edge to edge: the tile the repeat expects
+    texture.needsUpdate = true;
+  };
   return texture;
 }
 
