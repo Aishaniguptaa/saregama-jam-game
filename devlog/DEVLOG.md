@@ -116,6 +116,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. It's like we're going up in the sky higher and higher. It also tells how happiness is achieved through dance and music. It is how we reach God.
 
+### 16:09: Demo for a professor (not a playtest)
+- **Changed:** Showed the game to a professor. Logged as a demo, not a playtest. Nothing changed.
+- **Expected:** didn't predict
+- **Saw:** The professor looked at it. They said it works well, and that it was just too fast.
+- **Decided, and why (who):** Nothing decided yet.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
