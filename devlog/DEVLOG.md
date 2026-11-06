@@ -74,6 +74,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. Falling pillars were like any other traditional game and would get boring. Here you see the pillars placed and get the notes for each instrument. This is what the actual temple design has, and each rhythm hits the glowing pillars.
 
+### 14:53: Tanpura instead of santoor, for now
+- **Changed:** Swapped santoor for tanpura. This reverses our 13:26 decision to keep looking for a santoor sample.
+- **Expected:** didn't predict
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us, for now. Claude suggested tanpura because it couldn't find santoor sounds. We accepted the suggestion and stopped looking for santoor.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
