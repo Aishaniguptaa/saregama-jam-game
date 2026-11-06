@@ -15,7 +15,7 @@ import {
   HALL_ROW_X, HALL_PILLARS_PER_ROW, HALL_PILLAR_SPACING, HALL_PILLAR_WIDTH, HALL_PILLAR_HEIGHT,
   HALL_PILLAR_DEPTH, HALL_WRAP_Z, HALL_PILLAR_COLOR,
   FLOOR_BAND_COUNT, FLOOR_BAND_SPACING, FLOOR_BAND_WIDTH, FLOOR_BAND_DEPTH, FLOOR_BAND_HEIGHT,
-  FLOOR_DEPTH, FLOOR_COLOR, FLOOR_BAND_COLOR,
+  FLOOR_DEPTH, FLOOR_COLOR,
 } from './tuning.js';
 
 // --- THE TEMPLE WALLS: a continuous carved wall down each side of the corridor, in place of the old two
@@ -45,6 +45,20 @@ const WALL_PANEL_STYLE = '#43463f';    // the recessed panel: a deep shadow, bec
 const WALL_PILASTER_STYLE = '#949891'; // the raised pilaster: light enough to stand out against the recess
 const WALL_PLINTH_COLOR = 0x585b56;    // the plinth course, darker than the stone
 const WALL_CORNICE_COLOR = 0x949891;   // the cornice band, lighter, so the wall carries a lit top edge
+
+// --- THE FLOOR PAVING: the stone courtyard the whole temple stands on, drawn in code like the walls.
+// Same reasoning as the wall stone: the scene's key light is warm, so a warm brown floor turns orange
+// under it. This sits on the cool side of grey too, so the light brings it back to neutral paving stone.
+const FLOOR_TEXTURE_PX = 512;         // the paving canvas, drawn once in code, nothing downloaded
+const FLOOR_TILE_WORLD = 3.0;         // world units one whole canvas tile covers, across and along
+const FLOOR_SLABS_ACROSS = 2;         // slabs across one tile, so each slab reads about 1.5 units wide
+const FLOOR_SLABS_ALONG = 2;          // slabs along one tile, so each slab reads about 1.5 units deep
+const FLOOR_JOINT_PX = 5;             // the joint groove's width on the canvas
+const FLOOR_MOTTLE_COUNT = 70;        // faint weathering blotches, so the tile's repeat is hard to spot
+const FLOOR_TEXTURE_ANISOTROPY = 8;   // keeps the paving readable at the grazing angle the floor is seen at
+const FLOOR_STONE_COLOR = 0x686b64;   // the paving stone, and the paving bands: a cool grey, never warm
+const FLOOR_STONE_STYLE = '#' + FLOOR_STONE_COLOR.toString(16).padStart(6, '0');
+const FLOOR_JOINT_STYLE = '#33362f';  // the joint between slabs: darker, so the grid running into the distance reads
 
 // --- ONE BAY OF THE WALL, DRAWN IN CODE
 // The whole carving is a canvas texture: no file is downloaded for it. A tile is one bay of the mandapa - a
@@ -152,6 +166,78 @@ function makeWallTexture() {
   return texture;
 }
 
+// --- ONE TILE OF THE FLOOR, DRAWN IN CODE
+// A square canvas holding a grid of large paving slabs, each a slightly different tone, split by darker
+// joint lines that run both across the corridor and away into the distance, with faint mottling and
+// weathering over the top so the tile's own repeat is hard to spot. No file is downloaded for it.
+function makeFloorTexture() {
+  const size = FLOOR_TEXTURE_PX;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (ctx === null) return null;            // no canvas: the floor falls back to flat stone, never an error
+  const cols = FLOOR_SLABS_ACROSS;
+  const rows = FLOOR_SLABS_ALONG;
+  const slabW = size / cols;
+  const slabH = size / rows;
+
+  // the stone ground
+  ctx.fillStyle = FLOOR_STONE_STYLE;
+  ctx.fillRect(0, 0, size, size);
+
+  // each slab a little lighter or darker than its neighbours, so no two read as the same stone
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const shade = (Math.random() - 0.5) * 0.16;
+      ctx.fillStyle = shade > 0 ? `rgba(244,246,240,${shade})` : `rgba(22,24,22,${-shade})`;
+      ctx.fillRect(c * slabW, r * slabH, slabW, slabH);
+    }
+  }
+
+  // weathering: faint dark and light blotches and streaks, so the tile's repeat is hard to spot
+  for (let i = 0; i < FLOOR_MOTTLE_COUNT; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const w = (0.05 + Math.random() * 0.16) * size;
+    const h = (0.05 + Math.random() * 0.22) * size;
+    const alpha = 0.02 + Math.random() * 0.05;
+    ctx.fillStyle = Math.random() < 0.5 ? `rgba(238,241,234,${alpha})` : `rgba(24,26,23,${alpha})`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w / 2, h / 2, Math.random() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // the joints: a dark groove at every slab boundary, carried half at each edge so tiles meet to one
+  // continuous line - one set runs across the corridor, the other runs away into the distance
+  const jw = FLOOR_JOINT_PX;
+  const jh = jw / 2;
+  ctx.fillStyle = FLOOR_JOINT_STYLE;
+  for (let c = 0; c < cols; c++) {
+    const bx = c * slabW;
+    if (c === 0) { ctx.fillRect(0, 0, jh, size); ctx.fillRect(size - jh, 0, jh, size); }
+    else ctx.fillRect(bx - jh, 0, jw, size);
+  }
+  for (let r = 0; r < rows; r++) {
+    const by = r * slabH;
+    if (r === 0) { ctx.fillRect(0, 0, size, jh); ctx.fillRect(0, size - jh, size, jh); }
+    else ctx.fillRect(0, by - jh, size, jw);
+  }
+
+  // a lit edge just inside each joint, so the slabs read as raised stone rather than a flat drawing
+  ctx.fillStyle = 'rgba(238,242,234,0.10)';
+  for (let c = 1; c < cols; c++) ctx.fillRect(c * slabW + jh, 0, 2, size);
+  for (let r = 1; r < rows; r++) ctx.fillRect(0, r * slabH + jh, size, 2);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(FLOOR_BAND_WIDTH / FLOOR_TILE_WORLD, FLOOR_DEPTH / FLOOR_TILE_WORLD); // one slab ~1.5 units
+  texture.anisotropy = FLOOR_TEXTURE_ANISOTROPY;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 // --- FIELD
 // Everything is built once, at its starting place, and reused for every run: the six travelling pillars,
 // a fixed pool of wall pieces, a fixed set of paving bands, and the dancer. A run only ever moves things
@@ -255,16 +341,21 @@ export function createField(scene, makeLabel, camera = null) {
     }
   }
 
+  const floorTexture = makeFloorTexture();
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(FLOOR_BAND_WIDTH, FLOOR_DEPTH),
-    new THREE.MeshLambertMaterial({ color: FLOOR_COLOR }),
+    new THREE.MeshLambertMaterial({
+      map: floorTexture,
+      color: floorTexture === null ? FLOOR_COLOR : 0xffffff, // the map carries the paving; the fallback is flat stone
+    }),
   );
   floor.rotation.x = -Math.PI / 2; // the plane lies flat: its own +y runs into the distance
   floor.position.set(0, 0, HALL_WRAP_Z - FLOOR_DEPTH / 2);
   group.add(floor);
 
   const bandGeometry = new THREE.BoxGeometry(FLOOR_BAND_WIDTH, FLOOR_BAND_HEIGHT, FLOOR_BAND_DEPTH);
-  const bandMaterial = new THREE.MeshLambertMaterial({ color: FLOOR_BAND_COLOR });
+  // the same stone tone as the paving under it, so the bands read as part of the floor, not another material
+  const bandMaterial = new THREE.MeshLambertMaterial({ color: FLOOR_STONE_COLOR });
   const bandSpan = FLOOR_BAND_COUNT * FLOOR_BAND_SPACING;
   const bands = [];
   for (let i = 0; i < FLOOR_BAND_COUNT; i++) {

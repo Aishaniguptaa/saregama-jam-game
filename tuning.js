@@ -32,8 +32,8 @@ export const PILLAR_RECYCLE_Z = CAMERA_DISTANCE - PILLAR_RECYCLE_CLEARANCE;
 // --- TEMPO. The travel and the beat are the same number: a pillar crosses PILLAR_SPACING in one gap, so the
 // interval between two arrivals is exactly the gap. They cannot drift apart, because one is the other.
 export const START_BEAT_GAP = 1.95;      // the slow opening beat
-export const FASTEST_BEAT_GAP = 0.55;    // the floor the beat ramps down to
-export const PILLARS_TO_FULL_SPEED = 30; // hits it takes to travel from one to the other
+export const FASTEST_BEAT_GAP = 1.1;     // the floor the beat ramps down to: kept steady, never frantic
+export const PILLARS_TO_FULL_SPEED = 60; // hits it takes to travel from one to the other: a gentler ramp
 export function beatGap(hits) {
   const ramp = Math.min(1, Math.max(0, (Number.isFinite(hits) ? hits : 0) / PILLARS_TO_FULL_SPEED));
   return START_BEAT_GAP + (FASTEST_BEAT_GAP - START_BEAT_GAP) * ramp;
@@ -62,7 +62,7 @@ export const PILLAR_GLOW_OPACITY = 0.45;
 
 // --- RULES. Only a wrong key on a glowing pillar costs a life; nothing else does.
 // Pressing the right key on a glowing pillar always scores: dead on the beat is worth more than in the glow.
-export const LIVES = 3;
+export const LIVES = 5;
 export const POINTS_PERFECT = 25;   // dead on the beat
 export const POINTS_HIT = 10;       // in the glow, off the beat
 export const COMBO_MULTIPLIER = 0.1; // extra score per combo step
@@ -158,11 +158,14 @@ export const INSTRUMENT_AREA_FONT_PX = 14;
 export const INSTRUMENT_AREA_TITLE_FONT_PX = 11;
 export const INSTRUMENT_AREA_ROW_GAP_PX = 7;
 export const INSTRUMENT_AREA_PADDING_PX = 10;
-export const INSTRUMENT_COLOR = '#f4f4f4';
-export const INSTRUMENT_PENDING_COLOR = 'rgba(244, 244, 244, 0.3)'; // an instrument the orchestra has not reached yet
-export const INSTRUMENT_TITLE_COLOR = 'rgba(244, 244, 244, 0.55)';
-export const INSTRUMENT_AREA_BACKGROUND = 'rgba(244, 244, 244, 0.05)';
-export const INSTRUMENT_AREA_BORDER = '1px solid rgba(244, 244, 244, 0.16)';
+// The panel is the same gold-on-indigo as the screens: a joined instrument takes the heading gold, one still
+// to come is a dim parchment, and the panel itself is a deep indigo wash with a faint gold edge - so the
+// orchestra reads as part of the temple's ornament and not a browser list laid over the game.
+export const INSTRUMENT_COLOR = '#f2c66d';
+export const INSTRUMENT_PENDING_COLOR = 'rgba(236, 217, 180, 0.32)'; // an instrument the orchestra has not reached yet
+export const INSTRUMENT_TITLE_COLOR = 'rgba(242, 198, 109, 0.6)';
+export const INSTRUMENT_AREA_BACKGROUND = 'rgba(26, 18, 42, 0.34)';
+export const INSTRUMENT_AREA_BORDER = '1px solid rgba(242, 198, 109, 0.22)';
 
 // --- THE KEY ON A LIT PILLAR: one big letter, and only while that pillar is glowing.
 // The letter fades in with the light, flashes for as long as the light is on, and is gone the moment the
