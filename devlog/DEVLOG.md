@@ -32,6 +32,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not built yet. Plan block.
 - **Decided, and why (ag, nc):** Both of us. We picked Timing tapper because it suits our design: a vertical side-scroll in the temple, focused on its musical pillars. Team name SaReGaMa is for the seven notes of Indian music. Rhythm Journey is our first choice. Compose is for jam day if it fits.
 
+### 12:47: Real recorded instruments, not synthesized
+- **Changed:** Chose real recorded instruments over synthesized ones for the sounds.
+- **Expected:** didn't predict
+- **Saw:** Not tested yet.
+- **Decided, and why (ag, nc):** Both of us. Real recorded instruments would sound better and more real, and would enhance the gameplay experience, since music is our key feature.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
