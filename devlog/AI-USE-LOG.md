@@ -17,6 +17,7 @@ Add one row per use (newest first). Leave blank cells as `—` if they do not ap
 | Before 13:00 (commit c4b39a1) | Claude Code, build terminal (jam-companion) | Cut a short excerpt from a longer dhol recording | `assets/audio/dhol.wav` excerpt | Kept. Excerpt cut by Claude, so it may belong in `ai_assets` too; to check | Yes: `assets/audio/dhol.wav` (CC BY 3.0, Johnny Kalsi / The Dhol Foundation) |
 | ~14:32 (`Dancer_Rig.glb` saved) | Tripo AI (3D generator) | "give me an indian dancer with indian looks low poly" | A dancer model; we retopologized and rigged it in Tripo | Kept after retopo and rigging in Tripo. Reason for retopo: not stated yet | Yes: `assets/models/Dancer_Rig.glb` (also `Dancer.glb`). Tripo paid plan; terms allow game use |
 | 15:39 | Claude Code, build terminal (jam-companion) | Animate our rigged Indian dancer | First try: grey box, not the dancer. Later: only hands moving up and down, no dance | Not kept as the animation yet. Nothing decided | No (code only; the dancer file is in the Tripo row) |
+| ~14:01 (commit 0343085) | Tripo AI (3D generator) | "create Vijayanagra inspired carved pillars Indian Architecture" | Pillar model, re-exported low poly; later the seven carvings `pillar1` to `pillar7` | Kept. Earlier pillar file dropped and replaced by the seven carvings (commit 2ec3d83). Plan: to confirm | Yes: `assets/models/pillar1.glb` to `pillar7.glb`. Credited in `meta.json` and `ai_assets` |
 | | | | | | |
 
 ## Worked example
