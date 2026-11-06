@@ -1,11 +1,10 @@
-// audio.js — placeholder synth tones: one tone per swara, plus a hit tick and a miss buzz. Real samples land at M4.
+// audio.js — placeholder synth voices: one per swara, one timbre per instrument, plus a hit tick and a miss buzz. Real samples land at M4.
 import {
-  SWARA_FREQUENCIES, NOTE_DURATION, NOTE_GAIN,
-  HIT_FREQUENCY, HIT_DURATION, HIT_GAIN,
-  MISS_FREQUENCY, MISS_DURATION, MISS_GAIN,
+  SWARA_FREQUENCIES, INSTRUMENT_VOICES, HIT_FREQUENCY, HIT_TONE, MISS_FREQUENCY, MISS_TONE,
 } from './tuning.js';
 
 let context = null;
+let instrument = 0; // which voice the notes use: 0 = Tabla, moved on by setInstrument()
 
 // Browsers block sound until the player has interacted, so main.js calls this on the first keypress.
 export function unlockAudio() {
@@ -17,33 +16,60 @@ export function unlockAudio() {
   if (context.state === 'suspended') context.resume();
 }
 
-// One short oscillator note with a soft attack and a quick fade.
-function tone(frequency, duration, peak, type) {
+// One voice: an oscillator pair shaped by a voice row from tuning.js. Short-lived, so nothing to keep.
+function tone(frequency, voice) {
   if (!context) return;
   const now = context.currentTime;
-  const oscillator = context.createOscillator();
+  const base = frequency * (voice.octave ?? 1);
+
   const gain = context.createGain();
-  oscillator.type = type;
-  oscillator.frequency.setValueAtTime(frequency, now);
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(peak, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-  oscillator.connect(gain).connect(context.destination);
-  oscillator.start(now);
-  oscillator.stop(now + duration + 0.02);
+  gain.gain.linearRampToValueAtTime(voice.gain, now + (voice.attack ?? 0.01));
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + voice.duration);
+  gain.connect(context.destination);
+
+  const oscillators = [];
+  const main = context.createOscillator();
+  main.type = voice.type;
+  main.frequency.setValueAtTime(base * (voice.pitchStart ?? 1), now);
+  if (voice.pitchStart && voice.pitchStart !== 1) {
+    main.frequency.exponentialRampToValueAtTime(base, now + Math.max(0.001, voice.dropTime ?? 0.02));
+  }
+  main.connect(gain);
+  oscillators.push(main);
+
+  if (voice.detuneCents) { // a second string a little out of tune: the buzz of the sitar and the santoor
+    const second = context.createOscillator();
+    second.type = voice.type;
+    second.frequency.setValueAtTime(base, now);
+    second.detune.setValueAtTime(voice.detuneCents, now);
+    second.connect(gain);
+    oscillators.push(second);
+  }
+
+  for (const oscillator of oscillators) {
+    oscillator.start(now);
+    oscillator.stop(now + voice.duration + 0.02);
+  }
 }
 
 // --- THE ONE PLACE A NOTE IS PLAYED: swap this body for samples at M4 and nothing else changes.
+// index is the portal count: 0 Tabla, then Sitar, Flute, Dhol, Santoor, and it holds on the last one.
+export function setInstrument(index) {
+  const safe = Number.isFinite(index) ? Math.floor(index) : 0;
+  instrument = Math.max(0, Math.min(INSTRUMENT_VOICES.length - 1, safe));
+}
+
 export function playNote(laneIndex) {
   const frequency = SWARA_FREQUENCIES[laneIndex];
-  if (frequency) tone(frequency, NOTE_DURATION, NOTE_GAIN, 'triangle');
+  if (frequency) tone(frequency, INSTRUMENT_VOICES[instrument]);
 }
 
 // --- FEEDBACK
 export function playHit() {
-  tone(HIT_FREQUENCY, HIT_DURATION, HIT_GAIN, 'square');
+  tone(HIT_FREQUENCY, HIT_TONE);
 }
 
 export function playMiss() {
-  tone(MISS_FREQUENCY, MISS_DURATION, MISS_GAIN, 'sawtooth');
+  tone(MISS_FREQUENCY, MISS_TONE);
 }

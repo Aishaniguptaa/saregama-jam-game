@@ -2,16 +2,19 @@
 import * as THREE from 'three';
 import {
   LANE_COUNT, LANE_WIDTH, PILLAR_WIDTH, PILLAR_HEIGHT, PILLAR_DEPTH,
-  PILLAR_COLOR, SCROLL_SPEED, BEAT_INTERVAL, SPAWN_Y, DESPAWN_Y, STRIKE_Y,
+  PILLAR_COLOR, SCROLL_SPEED, beatGap, SPAWN_Y, DESPAWN_Y, STRIKE_Y,
 } from './tuning.js';
 
 // --- FIELD
 // One group, one shared box geometry and material; a pillar is a mesh plus which lane it is in.
-export function createField(scene) {
+// makeLabel(lane) comes from labels.js, wired in by main.js: it hands back the pillar's own label plane.
+// Nothing here builds or owns a texture, so a hundred pillars cost the same seven as the first seven.
+export function createField(scene, makeLabel) {
   const group = new THREE.Group();
   scene.add(group);
   return {
     group,
+    makeLabel,
     geometry: new THREE.BoxGeometry(PILLAR_WIDTH, PILLAR_HEIGHT, PILLAR_DEPTH),
     material: new THREE.MeshLambertMaterial({ color: PILLAR_COLOR }),
     active: [],
@@ -49,6 +52,7 @@ function nextLane(field) {
 function spawnPillar(field, laneIndex) {
   const mesh = new THREE.Mesh(field.geometry, field.material);
   mesh.position.set(laneX(laneIndex), SPAWN_Y, 0);
+  if (field.makeLabel) mesh.add(field.makeLabel(laneIndex)); // the pillar wears its own key and swara
   field.group.add(mesh);
   field.active.push({ lane: laneIndex, mesh });
 }
@@ -60,11 +64,12 @@ export function removePillar(field, pillar) {
 }
 
 // --- SCROLL + BEAT GRID
-export function updateField(field, dt) {
+// hits is the run's hit count from main.js: the grid starts slow and tightens as pillars are landed.
+export function updateField(field, dt, hits) {
   field.beatTimer -= dt;
   while (field.beatTimer <= 0) {
     spawnPillar(field, nextLane(field));
-    field.beatTimer += BEAT_INTERVAL; // add to the leftover, so the grid never drifts
+    field.beatTimer += beatGap(hits); // add to the leftover, so the grid never drifts
   }
 
   for (const pillar of field.active) pillar.mesh.position.y -= SCROLL_SPEED * dt;
