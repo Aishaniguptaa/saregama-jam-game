@@ -1,7 +1,7 @@
 {
-  "title": "",
+  "title": "SaReGaMa",
   "handle": "saregama",
-  "description": "",
+  "description": "An Indian dancer at the Vijayanagara temple of Hampi taps the seven musical pillars on the beat, building an orchestra of real instruments and opening portals into outer space.",
   "assets": [
     { "file": "assets/audio/tabla.mp3", "source": "https://freesound.org/people/Sh%C5%8Dtotsu/sounds/689550/", "license": "CC0 1.0" },
     { "file": "assets/audio/sitar.mp3", "source": "https://freesound.org/people/zgump/sounds/87436/", "license": "CC0 1.0" },
