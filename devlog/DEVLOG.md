@@ -50,6 +50,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. We want to keep santoor for the Indian orchestra aspect.
 
+### 13:30: Label the lanes with their keys
+- **Changed:** Changing the lanes: adding labels so we can see which key is which.
+- **Expected:** To work out which key to hit, so we can play.
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. So we can see which key is which.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
