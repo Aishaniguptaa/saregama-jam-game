@@ -155,9 +155,7 @@ createKeyboard({
   onRestartKey: () => {
     unlockAudio(); // the first press of the page still wakes the sound, whatever screen is up
     if (state.phase === 'title') {
-      showTitle(ui, false); // the rules take the title's place; the run has not begun yet
-      showRules(ui, true);
-      state.phase = 'rules';
+      startRun(); // the title screen carries the rules now, so a press begins the run straight from it
       return;
     }
     if (state.phase === 'rules' || state.phase === 'gameover') startRun();
