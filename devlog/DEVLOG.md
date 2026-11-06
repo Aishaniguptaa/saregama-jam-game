@@ -80,6 +80,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us, for now. Claude suggested tanpura because it couldn't find santoor sounds. We accepted the suggestion and stopped looking for santoor.
 
+### 15:27: Rejected 2D pillars in boxes
+- **Changed:** Rejected Claude's version, which gave us 2D pillars in boxes.
+- **Expected:** didn't predict
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. It wasn't looking good aesthetically.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
