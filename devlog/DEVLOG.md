@@ -62,6 +62,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. It's too fast.
 
+### 13:43: Tap on sight, not on the line
+- **Changed:** Changing how we hit the right keys: tap as soon as the block is seen on screen, not when it touches the line.
+- **Expected:** didn't predict
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. It doesn't make for good gameplay.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
