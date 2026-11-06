@@ -86,6 +86,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. It wasn't looking good aesthetically.
 
+### 15:35: Own models, not Blender
+- **Changed:** Rejected Claude's suggestion to use Blender. We imported our own models instead.
+- **Expected:** didn't predict
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. We wanted our own visual style.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
