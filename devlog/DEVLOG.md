@@ -92,6 +92,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. We wanted our own visual style.
 
+### 15:39: Animate the rigged dancer
+- **Changed:** Asked Claude to animate our rigged Indian dancer. The first try showed a grey box, not the dancer.
+- **Expected:** A little dance form to play.
+- **Saw:** Only the hands moving up and down. (Both of us tested it ourselves, not a playtest.)
+- **Decided, and why (who):** Nothing decided yet.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
