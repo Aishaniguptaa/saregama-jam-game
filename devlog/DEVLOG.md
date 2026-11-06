@@ -26,6 +26,12 @@ Format for each playtest (after M2 and after M3):
 - **Bored or stuck:**
 - **What we'll change (who decided):**
 
+### 12:45: Picked the concept and the card
+- **Changed:** Picked Timing tapper as our card. The game is a vertical side-scroller set in the Vijaya Vittala Temple at Hampi, Vijayanagara empire, 15th century. The temple has 56 pillars, and 7 pillars surround it, tied to the 7 notes. The pillars glow and you tap the correct ones. Instruments: table, sitar, flute, dhol, santoor, etc. As you progress, a portal opens into outer space. Points system. Two modes: Rhythm Journey and Compose (use the orchestra to play and record).
+- **Expected:** didn't predict
+- **Saw:** Not built yet. Plan block.
+- **Decided, and why (ag, nc):** Both of us. We picked Timing tapper because it suits our design: a vertical side-scroll in the temple, focused on its musical pillars. Team name SaReGaMa is for the seven notes of Indian music. Rhythm Journey is our first choice. Compose is for jam day if it fits.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
