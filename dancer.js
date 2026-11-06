@@ -94,11 +94,28 @@ const JOINTS = {
   upLegR: 'RightUpLeg', kneeR: 'RightLeg', footR: 'RightFoot',
 };
 
+// The name in the file and the name in the scene are not the same string, and that is not obvious: three.js
+// strips the ":" out of "mixamorig:Hips" as it loads, so the bone arrives called "mixamorigHips", while the
+// file's own spelling is kept aside on the node's userData. Both are indexed here, under the last part of
+// the name, so the lookup lands whichever way the loader spells it - and a re-export that drops the prefix
+// altogether still dances, because the last part is the same in all three spellings.
+function boneMap(model) {
+  const found = new Map();
+  model.traverse((node) => {
+    if (node.isBone !== true) return;
+    for (const name of [node.userData.name, node.name]) {
+      if (typeof name === 'string' && name !== '') found.set(name.split(':').pop(), node);
+    }
+  });
+  return found;
+}
+
 // Looked up once, here, and kept with the rest rotation each one is measured from: after this the dance
 // never looks a bone up again. A bone the model turns out not to have is simply not danced.
 function bind(dancer, model) {
+  const found = boneMap(model);
   for (const short in JOINTS) {
-    const bone = model.getObjectByName('mixamorig:' + JOINTS[short]);
+    const bone = found.get(JOINTS[short]);
     dancer.bones[short] = bone;
     dancer.rest[short] = bone === undefined ? null : bone.quaternion.clone();
   }
