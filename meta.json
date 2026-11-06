@@ -12,6 +12,7 @@
     { "file": "assets/audio/tanpura.mp3", "source": "https://freesound.org/people/luckylittleraven/sounds/416606/", "license": "CC0 1.0" }
   ],
   "ai_assets": [
+    "assets/temple-facade.svg",
     "assets/models/pillar1.glb",
     "assets/models/pillar2.glb",
     "assets/models/pillar3.glb",
