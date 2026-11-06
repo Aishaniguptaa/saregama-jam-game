@@ -2,6 +2,11 @@
   "title": "",
   "handle": "saregama",
   "description": "",
-  "assets": [],
+  "assets": [
+    { "file": "assets/audio/tabla.mp3", "source": "https://freesound.org/people/Sh%C5%8Dtotsu/sounds/689550/", "license": "CC0 1.0" },
+    { "file": "assets/audio/sitar.mp3", "source": "https://freesound.org/people/zgump/sounds/87436/", "license": "CC0 1.0" },
+    { "file": "assets/audio/flute.mp3", "source": "https://freesound.org/people/sankalp/sounds/179696/", "license": "CC BY 4.0 — credit: sankalp" },
+    { "file": "assets/audio/dhol.wav", "source": "https://commons.wikimedia.org/wiki/File:DHOL_BEAT.wav", "license": "CC BY 3.0 — credit: Johnny Kalsi / The Dhol Foundation. Excerpt cut from the longer source recording by Claude." }
+  ],
   "ai_assets": []
 }
