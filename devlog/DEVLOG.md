@@ -122,6 +122,11 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** The professor looked at it. They said it works well, and that it was just too fast.
 - **Decided, and why (who):** Nothing decided yet.
 
+### 16:26: Playtest (friend from another entry, after M4)
+- **Their story:** They opened it, played it, understood the game in two tries, and liked it.
+- **Bored or stuck:** No.
+- **What we'll change (both):** Nothing in the gameplay. Only the visuals, a little bit.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
