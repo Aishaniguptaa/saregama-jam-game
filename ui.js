@@ -183,7 +183,7 @@ export function showPortal(ui, shown, instrumentName) {
 export function updateHud(ui, { score, lives, combo }) {
   const full = Math.max(0, lives);
   ui.score.textContent = `Score ${score}`;
-  ui.lives.textContent = `Lives ${'●'.repeat(full)}${'○'.repeat(Math.max(0, LIVES - full))}`;
+  ui.lives.textContent = `Lives ${'♥'.repeat(full)}${'♡'.repeat(Math.max(0, LIVES - full))}`;
   ui.combo.textContent = combo > 1 ? `Combo x${combo}` : '';
 }
 
