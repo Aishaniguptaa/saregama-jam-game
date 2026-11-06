@@ -18,9 +18,141 @@ import {
   FLOOR_DEPTH, FLOOR_COLOR, FLOOR_BAND_COLOR,
 } from './tuning.js';
 
+// --- THE TEMPLE WALLS: a continuous carved wall down each side of the corridor, in place of the old two
+// rows of separate hall stones. A plinth at the foot, a carved face carrying pilasters and recessed panels,
+// and a cornice along the top; open above, so the sky stays the game's whole look. Stone brown and grey only.
+const WALL_INNER_X = HALL_ROW_X;       // the inner faces sit on the old hall-stone line, well clear of the pillar line
+const WALL_THICKNESS = 1.2;            // how far each wall runs back from its inner face
+const WALL_PLINTH_HEIGHT = 0.7;        // the footing course at the base
+const WALL_PLINTH_PROJECT = 0.22;      // the plinth steps this far toward the corridor
+const WALL_FACE_HEIGHT = 3.6;          // the carved wall face above the plinth
+const WALL_CORNICE_HEIGHT = 0.5;       // the band along the top edge
+const WALL_CORNICE_PROJECT = 0.28;     // the cornice steps this far toward the corridor
+const WALL_SEGMENT_COUNT = 8;          // wall pieces per side in the recycled pool
+const WALL_SEGMENT_LENGTH = 9;         // world units each piece runs down the corridor
+const WALL_SPAN = WALL_SEGMENT_COUNT * WALL_SEGMENT_LENGTH; // how far the pool reaches before it wraps
+const WALL_WRAP_Z = HALL_WRAP_Z - WALL_SEGMENT_LENGTH / 2;  // a piece wraps when its leading edge reaches the hall's wrap line
+const WALL_TILE_LENGTH = 2.25;         // world units one texture tile covers along the run
+const WALL_PILASTER_WIDTH = 0.5;       // a full pilaster's width, made of two half-pilasters meeting at the seams
+const WALL_CAP_BAND = 0.4;             // the base and capital moulding band at the foot and head of a pilaster
+const WALL_TEXTURE_PX = 512;           // the carving canvas, drawn once in code, nothing downloaded
+const WALL_ROUGHNESS = 0.95;           // stone is rough, and there is no environment map for a metal to reflect
+const WALL_FACE_COLOR = 0x7c7468;      // the wall stone: a desaturated grey-brown, never gold
+const WALL_FACE_STYLE = '#' + WALL_FACE_COLOR.toString(16).padStart(6, '0');
+const WALL_PANEL_STYLE = '#655d51';    // the recessed panel, a shade darker where the light does not reach
+const WALL_PILASTER_STYLE = '#8a8174'; // the raised pilaster, catching a little more light
+const WALL_PLINTH_COLOR = 0x6b6459;    // the plinth course, a shade darker than the stone
+const WALL_CORNICE_COLOR = 0x8a8174;   // the cornice band, a shade lighter
+
+// --- ONE BAY OF THE WALL, DRAWN IN CODE
+// The whole carving is a canvas texture: no file is downloaded for it. A tile is one bay of the mandapa - a
+// pilaster down each edge (two halves that meet to make one pilaster where two tiles join) and a recessed
+// panel between them, over block courses with a little vertical weathering so the repeat is hard to spot.
+// Stone brown and grey only: the gold belongs to the pillar glow and never appears on the walls.
+function makeWallTexture() {
+  const size = WALL_TEXTURE_PX;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (ctx === null) return null;            // no canvas: the walls fall back to flat stone, never an error
+  const across = size / WALL_TILE_LENGTH;   // pixels per world unit along the run
+  const up = size / WALL_FACE_HEIGHT;       // pixels per world unit up the wall
+  const px = (world) => world * across;
+  const py = (world) => size - world * up;  // world height measured up from the foot
+
+  // the stone ground
+  ctx.fillStyle = WALL_FACE_STYLE;
+  ctx.fillRect(0, 0, size, size);
+
+  // the recessed panel between the two half-pilasters
+  const panelLeft = px(WALL_PILASTER_WIDTH / 2);
+  const panelRight = px(WALL_TILE_LENGTH - WALL_PILASTER_WIDTH / 2);
+  const panelTop = py(WALL_FACE_HEIGHT - WALL_CAP_BAND);
+  const panelBottom = py(WALL_CAP_BAND);
+  ctx.fillStyle = WALL_PANEL_STYLE;
+  ctx.fillRect(panelLeft, panelTop, panelRight - panelLeft, panelBottom - panelTop);
+
+  // block courses: a shallow tonal step between rows and a staggered joint, so the stone reads as many
+  // blocks rather than one slab
+  const course = 0.45; // world units per course
+  for (let row = 0; row * course < WALL_FACE_HEIGHT; row++) {
+    const shade = (Math.random() - 0.5) * 0.1;
+    ctx.fillStyle = shade > 0 ? `rgba(255,246,228,${shade})` : `rgba(30,26,20,${-shade})`;
+    ctx.fillRect(0, py((row + 1) * course), size, course * up);
+    ctx.fillStyle = 'rgba(38,33,27,0.16)';
+    ctx.fillRect(px(Math.random() * WALL_TILE_LENGTH), py((row + 1) * course), 2, course * up);
+  }
+
+  // weathering: faint vertical streaking, dark and light, that breaks up the repeat
+  for (let i = 0; i < 16; i++) {
+    const sx = Math.random() * size;
+    const w = (0.04 + Math.random() * 0.12) * across;
+    const alpha = 0.04 + Math.random() * 0.07;
+    const grad = ctx.createLinearGradient(sx, 0, sx + w, 0);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, Math.random() < 0.6 ? `rgba(34,29,23,${alpha})` : `rgba(222,213,194,${alpha})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(sx, 0, w, size);
+  }
+
+  // the pilasters: each tile carries half a pilaster at either edge, so two tiles meet to make a whole one
+  const halfWidth = px(WALL_PILASTER_WIDTH / 2);
+  const capTop = py(WALL_FACE_HEIGHT - WALL_CAP_BAND);
+  const capBottom = py(WALL_CAP_BAND);
+  for (const leftHalf of [true, false]) {
+    const x0 = leftHalf ? 0 : size - halfWidth;
+    ctx.fillStyle = WALL_PILASTER_STYLE;
+    ctx.fillRect(x0, 0, halfWidth, size);
+    ctx.fillStyle = 'rgba(40,35,29,0.1)';      // a wash so the pilaster is not flat
+    ctx.fillRect(x0, 0, halfWidth, size * 0.5);
+    ctx.fillStyle = 'rgba(28,24,19,0.35)';     // base and capital moulding lines
+    ctx.fillRect(x0, capTop, halfWidth, 3);
+    ctx.fillRect(x0, capBottom, halfWidth, 3);
+    ctx.fillStyle = 'rgba(20,17,13,0.45)';     // the shadowed joint where it meets the panel
+    ctx.fillRect(leftHalf ? x0 + halfWidth - 3 : x0, 0, 3, size);
+    ctx.fillStyle = 'rgba(230,222,205,0.16)';  // the lit outer edge
+    ctx.fillRect(leftHalf ? x0 : x0 + halfWidth - 2, 0, 2, size);
+  }
+
+  // the panel bevel: lit along the top, shadowed along the foot
+  ctx.fillStyle = 'rgba(235,226,208,0.14)';
+  ctx.fillRect(panelLeft, panelTop, panelRight - panelLeft, 2);
+  ctx.fillStyle = 'rgba(18,15,12,0.4)';
+  ctx.fillRect(panelLeft, panelBottom - 2, panelRight - panelLeft, 2);
+
+  // a shallow carved relief in the panel: an inset frame around a small diamond
+  const inset = px(0.2);
+  const frameTop = panelTop + 0.18 * up;
+  const frameBottom = panelBottom - 0.18 * up;
+  ctx.strokeStyle = 'rgba(24,20,16,0.35)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(panelLeft + inset, frameTop, panelRight - panelLeft - 2 * inset, frameBottom - frameTop);
+  const cx = (panelLeft + panelRight) / 2;
+  const cy = (frameTop + frameBottom) / 2;
+  const r = Math.min((panelRight - panelLeft) * 0.18, (frameBottom - frameTop) * 0.2);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r);
+  ctx.lineTo(cx + r * 0.7, cy);
+  ctx.lineTo(cx, cy + r);
+  ctx.lineTo(cx - r * 0.7, cy);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(24,20,16,0.12)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(24,20,16,0.3)';
+  ctx.stroke();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(WALL_SEGMENT_LENGTH / WALL_TILE_LENGTH, 1); // whole tiles along the run, one tile tall
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 // --- FIELD
 // Everything is built once, at its starting place, and reused for every run: the six travelling pillars,
-// a fixed pool of hall stones, a fixed set of paving bands, and the dancer. A run only ever moves things
+// a fixed pool of wall pieces, a fixed set of paving bands, and the dancer. A run only ever moves things
 // and swaps which carving a pillar wears, so the hundredth beat costs what the first one cost.
 export function createField(scene, makeLabel, camera = null) {
   const group = new THREE.Group();
@@ -81,17 +213,43 @@ export function createField(scene, makeLabel, camera = null) {
     pillars[i].skins.set(-1, pillars[i].skin);
   }
 
-  // --- THE HALL: two rows of plain pillars, and the paved floor they stand on
-  const stoneGeometry = new THREE.BoxGeometry(HALL_PILLAR_WIDTH, HALL_PILLAR_HEIGHT, HALL_PILLAR_DEPTH);
-  const stoneMaterial = new THREE.MeshLambertMaterial({ color: HALL_PILLAR_COLOR });
-  const hallSpan = HALL_PILLARS_PER_ROW * HALL_PILLAR_SPACING;
-  const stones = [];
+  // --- THE HALL: two continuous carved walls, one down each side, and the paved floor they stand on.
+  // Each side is a pool of identical segments that tile edge to edge and recycle like the old stones, so
+  // the wall is endless and no piece is ever seen to pop or vanish mid-frame.
+  const wallTexture = makeWallTexture();
+  const wallFaceMaterial = new THREE.MeshStandardMaterial({
+    map: wallTexture,
+    color: wallTexture === null ? WALL_FACE_COLOR : 0xffffff, // the map carries the colour; the fallback is flat stone
+    roughness: WALL_ROUGHNESS,
+    metalness: 0,
+  });
+  const wallPlinthMaterial = new THREE.MeshStandardMaterial({ color: WALL_PLINTH_COLOR, roughness: WALL_ROUGHNESS, metalness: 0 });
+  const wallCorniceMaterial = new THREE.MeshStandardMaterial({ color: WALL_CORNICE_COLOR, roughness: WALL_ROUGHNESS, metalness: 0 });
+
+  const plinthGeometry = new THREE.BoxGeometry(WALL_THICKNESS + WALL_PLINTH_PROJECT, WALL_PLINTH_HEIGHT, WALL_SEGMENT_LENGTH);
+  const wallFaceGeometry = new THREE.BoxGeometry(WALL_THICKNESS, WALL_FACE_HEIGHT, WALL_SEGMENT_LENGTH);
+  const corniceGeometry = new THREE.BoxGeometry(WALL_THICKNESS + WALL_CORNICE_PROJECT, WALL_CORNICE_HEIGHT, WALL_SEGMENT_LENGTH);
+  const wallFaceBottom = WALL_PLINTH_HEIGHT;             // the carved face sits on top of the plinth
+  const wallFaceTop = wallFaceBottom + WALL_FACE_HEIGHT;
+  const wallCentreX = WALL_INNER_X + WALL_THICKNESS / 2; // the box centres, so each inner face lands on WALL_INNER_X
+
+  const walls = [];
   for (const side of [-1, 1]) {
-    for (let i = 0; i < HALL_PILLARS_PER_ROW; i++) {
-      const stone = new THREE.Mesh(stoneGeometry, stoneMaterial);
-      stone.position.set(side * HALL_ROW_X, HALL_PILLAR_HEIGHT / 2, HALL_WRAP_Z - i * HALL_PILLAR_SPACING);
-      group.add(stone);
-      stones.push(stone);
+    for (let i = 0; i < WALL_SEGMENT_COUNT; i++) {
+      const segment = new THREE.Group();
+
+      const plinth = new THREE.Mesh(plinthGeometry, wallPlinthMaterial);
+      plinth.position.y = WALL_PLINTH_HEIGHT / 2;
+      const face = new THREE.Mesh(wallFaceGeometry, wallFaceMaterial);
+      face.position.y = wallFaceBottom + WALL_FACE_HEIGHT / 2;
+      const cornice = new THREE.Mesh(corniceGeometry, wallCorniceMaterial);
+      cornice.position.y = wallFaceTop + WALL_CORNICE_HEIGHT / 2;
+      segment.add(plinth, face, cornice);
+
+      // centres are offset by half a length, so consecutive pieces tile edge to edge from the wrap line back
+      segment.position.set(side * wallCentreX, 0, HALL_WRAP_Z - (i + 0.5) * WALL_SEGMENT_LENGTH);
+      group.add(segment);
+      walls.push(segment);
     }
   }
 
@@ -125,9 +283,9 @@ export function createField(scene, makeLabel, camera = null) {
   group.add(dancerObject);
 
   const field = {
-    group, pillars, stones, bands, camera,
+    group, pillars, walls, bands, camera,
     dancer: { object: dancerObject, box: dancerBox },
-    hallSpan, bandSpan, columnX: 0,
+    bandSpan, columnX: 0,
     models: new Array(PILLAR_MODEL_URLS.length).fill(null),
     gap: START_BEAT_GAP, speed: travelSpeed(START_BEAT_GAP), cycleCursor: 0,
     litPillar: null, litOffset: 0, bag: [],
@@ -211,10 +369,12 @@ export function updateField(field, dt, hits, cue = true) {
     if (pillar.object.position.z > PILLAR_RECYCLE_Z) recycle(field, pillar);
   }
 
-  // The hall moves past the player at the same speed, so the whole temple travels as one thing.
-  for (const stone of field.stones) {
-    stone.position.z += field.speed * dt;
-    if (stone.position.z > HALL_WRAP_Z) stone.position.z -= field.hallSpan;
+  // The walls travel past at the same speed, so the whole temple moves as one thing. A piece that has
+  // passed the camera goes back to the far end by the whole span, so the run stays unbroken and no piece
+  // is ever seen to pop or vanish mid-frame.
+  for (const segment of field.walls) {
+    segment.position.z += field.speed * dt;
+    if (segment.position.z > WALL_WRAP_Z) segment.position.z -= WALL_SPAN;
   }
   for (const band of field.bands) {
     band.position.z += field.speed * dt;
