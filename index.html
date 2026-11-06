@@ -15,8 +15,13 @@
     #ui { position: fixed; inset: 0; z-index: 1; pointer-events: none; color: #ecd9b4;
       font: 16px/1.4 system-ui, sans-serif; }
     .hud { display: flex; justify-content: space-between; gap: 1rem; padding: 14px 18px;
-      font-variant-numeric: tabular-nums; }
-    .hud-combo { flex: 1; text-align: center; }
+      font-variant-numeric: tabular-nums;
+      font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif; }
+    /* The in-play text wears the same temple gold serif as the screens, with a shadow so the score and
+       lives stay readable over a bright sky at any stage */
+    .hud-score, .hud-combo, .hud-lives { color: #f2c66d; letter-spacing: 0.12em;
+      text-shadow: 0 0 14px rgba(255, 190, 110, 0.4), 0 1px 3px rgba(0, 0, 0, 0.85); }
+    .hud-combo { flex: 1; text-align: center; color: #f6d78e; }
     /* ---- Title and game-over screens: the live temple behind, framed in gold ----
        These screens are a soft scrim, not a wall: the 3D temple keeps playing behind them. A focal
        plate darkens the middle enough that the gold title and cream lines read crisply even if a bright
