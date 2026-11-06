@@ -128,6 +128,8 @@ Format for each playtest (after M2 and after M3):
 
 **What did you decide that Claude didn't?** I decided on the instruments on the left, the pillars, the environment, the game design, etc.
 
+**What did you reject from Claude, and why?** We rejected Claude's 2D pillars in boxes, because aesthetically it wasn't looking good. We changed its suggestion of using Blender and imported our own models, because we wanted our own visual style.
+
 ## AI Use Disclosure
 
 *Short summary for the gallery, taken from your running log in `devlog/AI-USE-LOG.md` (not from memory at the last minute). Say what you directed yourselves, what Claude Code did in the build terminal (and its builder subagents), and what other AI tools did. List every AI-generated asset file again here, or cite the log row that names it.*
