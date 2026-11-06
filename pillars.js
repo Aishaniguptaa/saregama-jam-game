@@ -21,7 +21,8 @@ import {
 // --- THE TEMPLE WALLS: a continuous carved wall down each side of the corridor, in place of the old two
 // rows of separate hall stones. A stepped base, a carved face carrying pilasters and recessed panels, a
 // decorated frieze under a projecting cornice, and a lit capstone along the very top; open above, so the
-// sky stays the game's whole look. Cool desaturated grey only, never warm stone.
+// sky stays the game's whole look. Warm sunlit sandstone throughout, matched to the golden-hour photograph
+// of the temple the makers supplied: the stone the pillars stand among, never the gold of their glow.
 const WALL_INNER_X = HALL_ROW_X;       // the inner faces sit on the old hall-stone line, well clear of the pillar line
 const WALL_THICKNESS = 1.2;            // how far each wall runs back from its inner face
 const WALL_PLINTH_HEIGHT = 0.7;        // the footing course at the base
@@ -48,23 +49,24 @@ const WALL_FRIEZE_MOTIF_WIDTH = 0.46;  // how much of its slot across a motif's 
 const WALL_FRIEZE_MOTIF_HEIGHT = 0.56; // how much of the band's height a motif's carved block fills
 const WALL_FRIEZE_DIAMOND = 0.34;      // the diamond cut into each block, as a share of the block's smaller side
 const WALL_TEXTURE_PX = 512;           // the carving canvas, drawn once in code, nothing downloaded
-// The stone is deliberately cool. The scene's key light is warm, so a warm grey-brown stone turns orange
-// under it and the wall stops reading as the temple at all: this sits on the cool side of grey, so the
-// light brings it back to neutral stone. Gold is never used here - gold belongs to the pillars' glow.
-const WALL_FACE_COLOR = 0x6b6e6a;      // the wall stone: a cool desaturated grey, never warm
+// The stone is warm sunlit sandstone, sampled from the golden-hour photograph of the temple the makers
+// supplied. The scene's key light is warm as well, and that is wanted: it lands these tones where the
+// photograph has them, the sunlit face bright and the recesses a deep brown. Every tone stays in that
+// sandstone brown family and is pulled back from gold - the gold belongs to the pillars' glow, never here.
+const WALL_FACE_COLOR = 0xb08d63;      // the wall stone: warm sunlit sandstone, matched to the photograph
 const WALL_FACE_STYLE = '#' + WALL_FACE_COLOR.toString(16).padStart(6, '0');
-const WALL_PANEL_STYLE = '#3b3e38';    // the recessed panel, deepened: at a distance the recess is the carving
-const WALL_FRIEZE_STYLE = '#5c6058';   // the frieze ground: a shade darker than the face, so the band reads
-const WALL_PILASTER_STYLE = '#9da297'; // the raised pilaster, lightened again: it must stand out against the recess
-const WALL_PLINTH_COLOR = 0x585b56;    // the plinth course, darker than the stone
-const WALL_MOULDING_COLOR = 0x7c8079;  // the moulding step over the plinth: mid grey, between plinth and face
-const WALL_CORNICE_COLOR = 0x949891;   // the cornice band, lighter, so the wall carries a lit top edge
-const WALL_SHADOW_COLOR = 0x3a3d37;    // the groove beneath the capstone: the wall's deepest shadow line
-const WALL_CAPSTONE_COLOR = 0xa4a99e;  // the lit capstone along the top: the lightest stone on the wall, still grey
+const WALL_PANEL_STYLE = '#6a4d2f';    // the recessed panel: a deep warm shadow; at a distance the recess is the carving
+const WALL_FRIEZE_STYLE = '#9a7850';   // the frieze ground: a shade darker than the face, so the band reads
+const WALL_PILASTER_STYLE = '#c2a077'; // the raised pilaster, lightened: it must stand out against the recess
+const WALL_PLINTH_COLOR = 0x8a6a45;    // the plinth course, darker than the stone
+const WALL_MOULDING_COLOR = 0xa5825a;  // the moulding step over the plinth: mid sandstone, between plinth and face
+const WALL_CORNICE_COLOR = 0xc9a273;   // the cornice band, lighter, so the wall carries a lit top edge
+const WALL_SHADOW_COLOR = 0x6b4f31;    // the groove beneath the capstone: the wall's deepest shadow line
+const WALL_CAPSTONE_COLOR = 0xd8b489;  // the lit capstone along the top: the lightest stone on the wall
 
 // --- THE FLOOR PAVING: the stone courtyard the whole temple stands on, drawn in code like the walls.
-// Same reasoning as the wall stone: the scene's key light is warm, so a warm brown floor turns orange
-// under it. This sits on the cool side of grey too, so the light brings it back to neutral paving stone.
+// The same stone as the wall face, one shade darker: warm sunlit sandstone paving, so the floor and the
+// walls read as one temple standing in the same warm key light, exactly as in the photograph.
 const FLOOR_TEXTURE_PX = 512;         // the paving canvas, drawn once in code, nothing downloaded
 const FLOOR_TILE_WORLD = 3.0;         // world units one whole canvas tile covers, across and along
 const FLOOR_SLABS_ACROSS = 2;         // slabs across one tile, so each slab reads about 1.5 units wide
@@ -73,15 +75,15 @@ const FLOOR_SLAB_SHADE = 0.13;        // how far one slab's tone strays from its
                                       // this tonal step is now the floor's only division and must never draw an edge
 const FLOOR_MOTTLE_COUNT = 70;        // faint weathering blotches, so the tile's repeat is hard to spot
 const FLOOR_TEXTURE_ANISOTROPY = 8;   // keeps the paving readable at the grazing angle the floor is seen at
-const FLOOR_STONE_COLOR = 0x686b64;   // the paving stone, and the paving bands: a cool grey, never warm
+const FLOOR_STONE_COLOR = 0x9c7a52;   // the paving stone, and the paving bands: warm sandstone, a touch darker than the face
 const FLOOR_STONE_STYLE = '#' + FLOOR_STONE_COLOR.toString(16).padStart(6, '0');
 
 // --- ONE BAY OF THE WALL, DRAWN IN CODE
 // The whole carving is a canvas texture: no file is downloaded for it. A tile is one bay of the mandapa - a
 // pilaster down each edge (two halves that meet to make one pilaster where two tiles join) and a recessed
 // panel between them, over block courses with a little vertical weathering so the repeat is hard to spot.
-// A decorated frieze carries across the top of the bay, under the cornice. Cool desaturated grey only: the
-// gold belongs to the pillar glow and never appears on the walls.
+// A decorated frieze carries across the top of the bay, under the cornice. Warm sunlit sandstone, like the
+// stone around it: the gold belongs to the pillar glow and never appears on the walls.
 function makeWallTexture() {
   const size = WALL_TEXTURE_PX;
   const canvas = document.createElement('canvas');
@@ -117,7 +119,7 @@ function makeWallTexture() {
     const shade = (Math.random() - 0.5) * 0.1;
     ctx.fillStyle = shade > 0 ? `rgba(255,246,228,${shade})` : `rgba(30,26,20,${-shade})`;
     ctx.fillRect(0, py((row + 1) * course), size, course * up);
-    ctx.fillStyle = 'rgba(30,32,28,0.34)';
+    ctx.fillStyle = 'rgba(46,32,16,0.34)';
     ctx.fillRect(px(Math.random() * WALL_TILE_LENGTH), py((row + 1) * course), 4, course * up);
   }
 
@@ -143,28 +145,28 @@ function makeWallTexture() {
     const x0 = leftHalf ? 0 : size - halfWidth;
     ctx.fillStyle = WALL_PILASTER_STYLE;
     ctx.fillRect(x0, capTop, halfWidth, size - capTop);
-    ctx.fillStyle = 'rgba(38,40,36,0.18)';     // a wash so the pilaster is not flat
+    ctx.fillStyle = 'rgba(56,40,20,0.18)';     // a wash so the pilaster is not flat
     ctx.fillRect(x0, capTop, halfWidth, (size - capTop) * 0.5);
-    ctx.fillStyle = 'rgba(18,20,18,0.74)';     // base and capital moulding lines: deeper and wider than before
+    ctx.fillStyle = 'rgba(44,29,14,0.74)';     // base and capital moulding lines: deeper and wider than before
     ctx.fillRect(x0, capTop, halfWidth, 8);
     ctx.fillRect(x0, capBottom, halfWidth, 8);
-    ctx.fillStyle = 'rgba(8,9,8,0.9)';         // the shadowed joint where it meets the panel: this line IS the relief
+    ctx.fillStyle = 'rgba(28,18,8,0.9)';       // the shadowed joint where it meets the panel: this line IS the relief
     ctx.fillRect(leftHalf ? x0 + halfWidth - 10 : x0, capTop, 10, size - capTop);
-    ctx.fillStyle = 'rgba(244,247,240,0.6)';   // the lit outer edge, raised again: the pilaster catches the light
+    ctx.fillStyle = 'rgba(255,236,200,0.6)';   // the lit outer edge, raised again: the pilaster catches the light
     ctx.fillRect(leftHalf ? x0 : x0 + halfWidth - 7, capTop, 7, size - capTop);
   }
 
   // the panel bevel: lit along the top, shadowed along the foot, both pushed harder than before
-  ctx.fillStyle = 'rgba(242,246,238,0.5)';
+  ctx.fillStyle = 'rgba(255,233,193,0.5)';
   ctx.fillRect(panelLeft, panelTop, panelRight - panelLeft, 6);
-  ctx.fillStyle = 'rgba(8,9,8,0.78)';
+  ctx.fillStyle = 'rgba(28,18,8,0.78)';
   ctx.fillRect(panelLeft, panelBottom - 8, panelRight - panelLeft, 8);
 
   // a shallow carved relief in the panel: an inset frame around a small diamond
   const inset = px(0.2);
   const frameTop = panelTop + 0.18 * up;
   const frameBottom = panelBottom - 0.18 * up;
-  ctx.strokeStyle = 'rgba(14,16,14,0.6)';
+  ctx.strokeStyle = 'rgba(38,25,12,0.6)';
   ctx.lineWidth = 6;
   ctx.strokeRect(panelLeft + inset, frameTop, panelRight - panelLeft - 2 * inset, frameBottom - frameTop);
   const cx = (panelLeft + panelRight) / 2;
@@ -176,9 +178,9 @@ function makeWallTexture() {
   ctx.lineTo(cx, cy + r);
   ctx.lineTo(cx - r * 0.7, cy);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(10,11,10,0.42)';
+  ctx.fillStyle = 'rgba(32,21,10,0.42)';
   ctx.fill();
-  ctx.strokeStyle = 'rgba(10,11,10,0.72)';
+  ctx.strokeStyle = 'rgba(32,21,10,0.72)';
   ctx.stroke();
 
   // the frieze: a continuous decorated band under the cornice, painted over the pilaster heads, so it runs
@@ -187,9 +189,9 @@ function makeWallTexture() {
   const friezeBottom = py(carveTop);
   ctx.fillStyle = WALL_FRIEZE_STYLE;
   ctx.fillRect(0, friezeTop, size, friezeBottom - friezeTop);
-  ctx.fillStyle = 'rgba(242,246,238,0.36)';                 // the lit upper order of the band
+  ctx.fillStyle = 'rgba(255,233,193,0.36)';                 // the lit upper order of the band
   ctx.fillRect(0, friezeTop, size, 4);
-  ctx.fillStyle = 'rgba(8,9,8,0.7)';                        // the shadow at its foot, so the band stands proud
+  ctx.fillStyle = 'rgba(28,18,8,0.7)';                      // the shadow at its foot, so the band stands proud
   ctx.fillRect(0, friezeBottom - 6, size, 6);
 
   // the motifs on it: a raised block with a diamond cut into it, repeated along the band, each lit from
@@ -199,9 +201,9 @@ function makeWallTexture() {
   const motifY = (friezeTop + friezeBottom) / 2 - motifH / 2;
   for (let i = 0; i < WALL_FRIEZE_MOTIF_COUNT; i++) {
     const motifX = ((i + 0.5) * size) / WALL_FRIEZE_MOTIF_COUNT - motifW / 2;
-    ctx.fillStyle = 'rgba(8,9,8,0.5)';
+    ctx.fillStyle = 'rgba(28,18,8,0.5)';
     ctx.fillRect(motifX + 4, motifY + 4, motifW, motifH);    // the block's own cast shadow, down and to the right
-    ctx.fillStyle = 'rgba(236,240,232,0.34)';
+    ctx.fillStyle = 'rgba(255,229,186,0.34)';
     ctx.fillRect(motifX, motifY, motifW, motifH);            // the lit face of the block
     const dx = motifX + motifW / 2;
     const dy = motifY + motifH / 2;
@@ -212,9 +214,9 @@ function makeWallTexture() {
     ctx.lineTo(dx, dy + dr);
     ctx.lineTo(dx - dr * 0.7, dy);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(8,9,8,0.42)';
+    ctx.fillStyle = 'rgba(28,18,8,0.42)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(8,9,8,0.72)';
+    ctx.strokeStyle = 'rgba(28,18,8,0.72)';
     ctx.lineWidth = 4;
     ctx.stroke();
   }
@@ -255,7 +257,7 @@ function makeFloorTexture() {
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const shade = (Math.random() - 0.5) * FLOOR_SLAB_SHADE;
-      ctx.fillStyle = shade > 0 ? `rgba(244,246,240,${shade})` : `rgba(22,24,22,${-shade})`;
+      ctx.fillStyle = shade > 0 ? `rgba(255,236,200,${shade})` : `rgba(34,22,10,${-shade})`;
       ctx.fillRect(c * slabW, r * slabH, slabW, slabH);
     }
   }
@@ -268,7 +270,7 @@ function makeFloorTexture() {
     const w = (0.05 + Math.random() * 0.16) * size;
     const h = (0.05 + Math.random() * 0.22) * size;
     const alpha = 0.02 + Math.random() * 0.05;
-    ctx.fillStyle = Math.random() < 0.5 ? `rgba(238,241,234,${alpha})` : `rgba(24,26,23,${alpha})`;
+    ctx.fillStyle = Math.random() < 0.5 ? `rgba(255,231,190,${alpha})` : `rgba(38,25,12,${alpha})`;
     ctx.beginPath();
     ctx.ellipse(x, y, w / 2, h / 2, Math.random() * Math.PI, 0, Math.PI * 2);
     ctx.fill();
