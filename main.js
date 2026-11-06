@@ -1,114 +1,66 @@
-// main.js — the scene, the render loop and the state machine (title -> playing -> gameover), plus the beat line, its timing band and the portal. The only file that wires the others.
+// main.js — the scene, the render loop and the state machine (title -> playing -> gameover): the one file that wires the others.
 import * as THREE from 'three';
 import * as T from './tuning.js';
-import { createField, resetField, updateField, removePillar, findPillarNearLine, offsetToLine } from './pillars.js';
-import { createKeyboard, judge, windowsFor } from './input.js';
-import { createLabels, createPillarLabel, showLabels, stripBottomY } from './labels.js';
-import { createUI, updateHud, showTitle, showGameOver, showPlayHint, placePlayHint } from './ui.js';
+import { createField, resetField, updateField, pressPillar, setColumnX, loadPillarModels, loadDancerModel } from './pillars.js';
+import { createPillarLabel } from './labels.js';
+import { createKeyboard } from './input.js';
+import { createUI, updateHud, showTitle, showGameOver, showPlayHint, setInstruments } from './ui.js';
 import { unlockAudio, playNote, playHit, playMiss, setInstrument } from './audio.js';
 
-// --- RENDERER AND CAMERA: one fixed side-on view of the whole field
+// --- RENDERER
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.insertBefore(renderer.domElement, document.getElementById('ui'));
 
+// --- SCENE: the player stands still and the temple travels past, so the fog closes the far end of the
+// hall and the stones and the paving bands glide by. The camera looks straight down the hall and never
+// turns, which is also why nothing in the scene ever needs to be turned to face it.
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(T.BACKGROUND_COLOR);
+scene.fog = new THREE.Fog(T.BACKGROUND_COLOR, T.FOG_NEAR, T.FOG_FAR);
 
-const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
-camera.position.set(0, T.VIEW_CENTER_Y, 12);
-camera.lookAt(0, T.VIEW_CENTER_Y, 0);
+// --- CAMERA
+// Motion down the hall is only visible in perspective, so the camera is a perspective one, standing still
+// behind the player. Its distance comes from the corridor height that has to be visible at the press
+// point, so the framing is the same on every window shape and only the aspect changes with the window.
+const camera = new THREE.PerspectiveCamera(T.CAMERA_FOV, 1, T.CAMERA_NEAR, T.CAMERA_FAR);
+camera.position.set(0, T.CAMERA_Y, T.CAMERA_DISTANCE);
+camera.lookAt(0, T.CAMERA_Y, 0);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const lamp = new THREE.DirectionalLight(0xffffff, 1.2);
-lamp.position.set(-4, 8, 10);
-scene.add(lamp);
+// --- LIGHTS: a warm key from the left and a cool fill from the right, so the carving keeps its shape and
+// the stone never goes flat and muddy. Both are dialled in tuning.js.
+scene.add(new THREE.AmbientLight(0xffffff, T.AMBIENT_INTENSITY));
+const keyLight = new THREE.DirectionalLight(T.KEY_LIGHT_COLOR, T.KEY_LIGHT_INTENSITY);
+keyLight.position.set(-6, 9, 7);
+scene.add(keyLight);
+const fillLight = new THREE.DirectionalLight(T.FILL_LIGHT_COLOR, T.FILL_LIGHT_INTENSITY);
+fillLight.position.set(7, 4, 6);
+scene.add(fillLight);
 
-const FIELD_HALF_WIDTH = (T.LANE_COUNT * T.LANE_WIDTH) / 2;
+// --- THE FIELD: the travelling pillar line, the hall, the floor and the dancer. Built once, reused every
+// run. The carvings arrive when they arrive: every pillar is a plain grey box and the dancer is a plain
+// box from the first frame, and anything that cannot load simply stays that way. Nothing waits on 16 MB
+// of models, so the title screen never stalls and the game never breaks with them.
+const field = createField(scene, createPillarLabel, camera);
+loadPillarModels(field);
+loadDancerModel(field);
 
-// Fit all seven lanes across, and never let the view get so short that the fall and the line go off screen.
-// VIEW_HEIGHT is therefore a floor, not an exact height: every window shape shows at least this much of the
-// fall, which is what keeps a spawning pillar whole and the lead time the same on every screen.
+// Every window shape shows the same corridor, and the pillar line keeps its place across the screen:
+// PILLAR_COLUMN_SPLIT of the way across, on the right, wherever the window's shape puts the edges.
 function resize() {
   const aspect = window.innerWidth / Math.max(1, window.innerHeight);
-  const halfWidth = Math.max(FIELD_HALF_WIDTH + T.VIEW_MARGIN, (T.VIEW_HEIGHT / 2) * aspect);
-  const halfHeight = halfWidth / aspect;
-  camera.left = -halfWidth;
-  camera.right = halfWidth;
-  camera.top = halfHeight; // the frustum is measured from the camera, which sits at VIEW_CENTER_Y
-  camera.bottom = -halfHeight;
+  camera.aspect = aspect;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  placeHint();
+  setColumnX(field, (2 * T.PILLAR_COLUMN_SPLIT - 1) * T.CAMERA_DISTANCE * T.TAN_HALF_FOV * aspect);
 }
 window.addEventListener('resize', resize);
 
-// --- THE BEAT LINE: the moment to press. A bright bar with a flat shaded band around it, and the band is
-// the good window itself, converted from seconds to world units by the fall speed, so the two can never
-// drift apart. The band is one unit plane scaled to size: one geometry and one material for the whole run.
-const line = new THREE.Mesh(
-  new THREE.BoxGeometry(FIELD_HALF_WIDTH * 2, T.LINE_THICKNESS, T.LINE_THICKNESS),
-  new THREE.MeshBasicMaterial({ color: T.LINE_COLOR }),
-);
-line.position.set(0, T.STRIKE_Y, T.LINE_Z);
-scene.add(line);
-
-const band = new THREE.Mesh(
-  new THREE.PlaneGeometry(1, 1),
-  new THREE.MeshBasicMaterial({ color: T.BAND_COLOR }),
-);
-band.position.set(0, T.STRIKE_Y, T.BAND_Z);
-scene.add(band);
-
-// The band narrows as WINDOW_TIGHTENING narrows the window, so a portal's difficulty is visible on the line.
-function sizeBand(portalsOpened) {
-  band.scale.set(FIELD_HALF_WIDTH * 2, windowsFor(portalsOpened).good * 2 * T.SCROLL_SPEED, 1);
-}
-
-// --- THE PORTAL: one ring, built once at the line and reused every time the beat meter fills.
-const portalMaterial = new THREE.MeshBasicMaterial({
-  color: T.PORTAL_COLOR,
-  transparent: true,
-  opacity: T.PORTAL_OPACITY,
-  depthWrite: false, // it draws over the line, but never hides a pillar behind it
-});
-const portalRing = new THREE.Mesh(
-  new THREE.RingGeometry(T.PORTAL_RADIUS * T.PORTAL_INNER_RATIO, T.PORTAL_RADIUS, T.PORTAL_SEGMENTS),
-  portalMaterial,
-);
-portalRing.position.set(0, T.STRIKE_Y, T.PORTAL_Z);
-portalRing.visible = false;
-scene.add(portalRing);
-
-// --- THE DANCER STAND-IN: a plain box, replaced by the real world at M4
-const dancer = new THREE.Mesh(
-  new THREE.BoxGeometry(T.DANCER_WIDTH, T.DANCER_HEIGHT, 0.5),
-  new THREE.MeshLambertMaterial({ color: T.DANCER_COLOR }),
-);
-dancer.position.set(0, T.STRIKE_Y + T.DANCER_HEIGHT / 2, -0.7);
-scene.add(dancer);
-
 // --- STATE
-// meter is hits landed since the last portal or the last life lost; portals is how many opened this run.
+// orchestra is how many instruments are playing: one at the start of a run, and a portal raises it by one.
 let ui = null;
-const field = createField(scene, createPillarLabel);
-const labels = createLabels(scene); // one key + swara strip under the lanes, for the whole run
-const state = { phase: 'title', score: 0, lives: T.LIVES, combo: 0, hits: 0, meter: 0, portals: 0, portalTimer: 0 };
-
-// The play hint may not ride up into the lane label strip: hand ui.js the strip's bottom edge in pixels.
-// The camera is orthographic, axis-aligned and never rotates, so the mapping is a plain proportion.
-function placeHint() {
-  if (!ui) return;
-  if (!T.SHOW_LANE_STRIP) {
-    placePlayHint(ui, Infinity);
-    return;
-  }
-  const viewBottom = T.VIEW_CENTER_Y + camera.bottom;
-  const viewTop = T.VIEW_CENTER_Y + camera.top;
-  const stripBottom = stripBottomY();
-  placePlayHint(ui, ((stripBottom - viewBottom) / (viewTop - viewBottom)) * window.innerHeight);
-}
+const state = { phase: 'title', score: 0, lives: T.LIVES, combo: 0, hits: 0, orchestra: 1 };
 
 function startRun() {
   state.phase = 'playing';
@@ -116,100 +68,59 @@ function startRun() {
   state.lives = T.LIVES;
   state.combo = 0;
   state.hits = 0;
-  state.meter = 0;
-  state.portals = 0;
-  state.portalTimer = 0;
-  resetField(field); // pillars, beat grid and bag all back to the start
-  setInstrument(0);  // every run opens on the first instrument
-  closePortal();
-  sizeBand(0);
+  state.orchestra = 1;
+  resetField(field); // the whole line goes back down the corridor and the notes are dealt again
+  setInstrument(state.orchestra - 1);
+  setInstruments(ui, state.orchestra);
   updateHud(ui, state);
   showTitle(ui, false);
   showGameOver(ui, false, 0);
-  showLabels(labels, true);
   showPlayHint(ui, true);
 }
 
 function endRun() {
   state.phase = 'gameover';
-  closePortal();
   showGameOver(ui, true, state.score);
-  showLabels(labels, false);
   showPlayHint(ui, false);
 }
 
 function loseLife() {
   state.lives -= 1;
   state.combo = 0;
-  state.meter = 0; // the meter empties the moment a life goes
   playMiss();
   updateHud(ui, state);
   if (state.lives <= 0) endRun();
 }
 
-// --- ONE TAP: find the pillar in that lane, judge it against the line
-function tapLane(laneIndex) {
+// --- ONE KEYPRESS, JUDGED AGAINST THE LIGHT
+// The right key on the lit pillar scores: dead on the beat for full points, anywhere in the glow for less.
+// A key pressed with nothing lit, a repeat press on a pillar already answered, and a light left to go out
+// all cost nothing at all. The only thing that costs a life is a wrong key on a lit pillar.
+function tapLane(lane) {
   if (state.phase !== 'playing') return;
 
-  const pillar = findPillarNearLine(field, laneIndex);
-  const verdict = judge(pillar ? offsetToLine(pillar) : Infinity, state.portals);
-
+  const verdict = pressPillar(field, lane);
   if (verdict === 'wrong') {
-    loseLife(); // the pillar, if there was one, is untouched and still falling
+    loseLife();
     return;
   }
+  if (verdict !== 'perfect' && verdict !== 'hit') return;
 
-  removePillar(field, pillar);
   state.hits += 1;
   state.combo += 1;
-  state.meter += 1;
   const base = verdict === 'perfect' ? T.POINTS_PERFECT : T.POINTS_HIT;
   state.score += Math.round(base * (1 + (state.combo - 1) * T.COMBO_MULTIPLIER));
-  playNote(laneIndex);
+  playNote(lane);
   playHit();
-  if (state.meter >= T.HITS_PER_PORTAL) openPortal();
   updateHud(ui, state);
-  if (state.hits === T.HINT_HIDE_AFTER_HITS) showPlayHint(ui, false); // the hint has taught its first pillars
-}
-
-// --- THE PORTAL: the meter filled, so the section ends and the next dimension opens.
-// The field clears and the beat grid restarts, which makes the open moment a real break in the music:
-// nothing to hit while the ring is open, the meter stays full, and the next pillar is a whole lead away.
-function openPortal() {
-  state.portals += 1;
-  state.portalTimer = T.PORTAL_DURATION;
-  setInstrument(state.portals); // Tabla -> Sitar -> Flute -> Dhol -> Santoor
-  sizeBand(state.portals);
-  resetField(field);
-  portalRing.scale.setScalar(T.PORTAL_START_SCALE);
-  portalMaterial.opacity = T.PORTAL_OPACITY;
-  portalRing.visible = true;
-}
-
-function closePortal() {
-  state.portalTimer = 0;
-  portalRing.visible = false;
-}
-
-// The ring opens out and fades over PORTAL_DURATION; when it closes the meter empties and the section starts.
-function updatePortal(dt) {
-  if (state.portalTimer <= 0) return;
-  state.portalTimer = Math.max(0, state.portalTimer - dt);
-  const progress = 1 - state.portalTimer / T.PORTAL_DURATION;
-  portalRing.scale.setScalar(T.PORTAL_START_SCALE + (1 - T.PORTAL_START_SCALE) * progress);
-  portalMaterial.opacity = T.PORTAL_OPACITY * (1 - progress);
-  if (state.portalTimer === 0) {
-    closePortal();
-    state.meter = 0;
-    updateHud(ui, state);
-  }
+  if (state.hits === T.HINT_HIDE_AFTER_HITS) showPlayHint(ui, false); // the hint has taught its first beats
 }
 
 // --- INPUT: sound wakes on the first keypress, SPACE starts and restarts
 createKeyboard({
-  onLane: (laneIndex) => {
+  onLane: (lane) => {
     unlockAudio();
-    tapLane(laneIndex);
+    tapLane(lane);
   },
   onRestartKey: () => {
     unlockAudio();
@@ -217,21 +128,20 @@ createKeyboard({
   },
 });
 
-// --- LOOP: dt comes from the frame clock, capped so a stalled frame cannot teleport a pillar
+// --- LOOP: dt comes from the frame clock, capped so a stalled frame cannot skip a whole beat
 let lastFrame = 0;
 
 renderer.setAnimationLoop((now) => {
   const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.05) : 0;
   lastFrame = now;
-  if (state.phase === 'playing') {
-    updateField(field, dt, state.hits);
-    updatePortal(dt);
-  }
+  // The hall glides on the title and game-over screens too; only the light cue stops.
+  updateField(field, dt, state.hits, state.phase === 'playing');
   renderer.render(scene, camera);
 });
 
 ui = createUI(document.getElementById('ui'));
-resize(); // the first fit, now that ui.js can be told where the lane label strip ends
-sizeBand(0);
+resize();
 updateHud(ui, state);
+setInstruments(ui, state.orchestra);
 showTitle(ui, true);
+showGameOver(ui, false, 0);

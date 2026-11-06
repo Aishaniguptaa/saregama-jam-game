@@ -12,3 +12,6 @@ context/references/*.mkv
 
 # gateway key lives here; never commit it
 .claude/settings.local.json
+
+# scratch space used while hunting for assets; nothing here ships
+.tmp-hunt/

@@ -1,25 +1,9 @@
-// input.js — the key map and the timing judgement: is this tap a hit, a perfect, or a wrong tap?
-import { KEYS, RESTART_KEY, WINDOW_PERFECT, WINDOW_GOOD, WINDOW_TIGHTENING } from './tuning.js';
+// input.js — the key map ('s'..'n' to a lane, SPACE to restart) and the one keyboard listener the game has.
+import { KEYS, RESTART_KEY } from './tuning.js';
 
 // --- KEY MAP: 's'..'n' -> lane 0..6, anything else -> -1
 export function laneFromKey(key) {
   return KEYS.indexOf(String(key).toLowerCase());
-}
-
-// --- TIMING WINDOW: tighter each time a portal opens
-export function windowsFor(portalsOpened) {
-  const shrink = Math.pow(WINDOW_TIGHTENING, Math.max(0, portalsOpened));
-  return { perfect: WINDOW_PERFECT * shrink, good: WINDOW_GOOD * shrink };
-}
-
-// --- HIT JUDGEMENT: offset is seconds from the line (0 = dead on). Returns 'perfect' | 'good' | 'wrong'.
-export function judge(offsetSeconds, portalsOpened) {
-  if (!Number.isFinite(offsetSeconds)) return 'wrong';
-  const windows = windowsFor(portalsOpened);
-  const distance = Math.abs(offsetSeconds);
-  if (distance <= windows.perfect) return 'perfect';
-  if (distance <= windows.good) return 'good';
-  return 'wrong';
 }
 
 // --- KEYBOARD
