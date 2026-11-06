@@ -11,7 +11,7 @@ import {
   GLOW_AFTER_SECONDS, PERFECT_SECONDS, HIT_SECONDS, HIT_LEVEL, GLOW_LEVEL, glowBefore,
   START_BEAT_GAP, beatGap, travelSpeed,
   PILLAR_MODEL_URLS, PILLAR_FALLBACK_MODEL_URL, PILLAR_MODEL_METALNESS,
-  DANCER_MODEL_URL, DANCER_WIDTH, DANCER_HEIGHT, DANCER_X, DANCER_Z, DANCER_YAW, DANCER_COLOR,
+  DANCER_WIDTH, DANCER_HEIGHT, DANCER_X, DANCER_Z, DANCER_YAW, DANCER_COLOR,
   HALL_ROW_X, HALL_PILLARS_PER_ROW, HALL_PILLAR_SPACING, HALL_PILLAR_WIDTH, HALL_PILLAR_HEIGHT,
   HALL_PILLAR_DEPTH, HALL_WRAP_Z, HALL_PILLAR_COLOR,
   FLOOR_BAND_COUNT, FLOOR_BAND_SPACING, FLOOR_BAND_WIDTH, FLOOR_BAND_DEPTH, FLOOR_BAND_HEIGHT,
@@ -506,22 +506,6 @@ function wearLoaded(field) {
 }
 
 // --- THE DANCER
-// Asked for the same way, at the same time, and just as silent if she never arrives: the plain box stands
-// where she will. There is no rig in her file, so she is placed, turned and scaled as one piece and left
-// standing - nothing here invents a dance.
-export function loadDancerModel(field) {
-  fetchModel(DANCER_MODEL_URL)
-    .then((buffer) => (buffer === null ? null : parseModel(buffer, -2, DANCER_WIDTH, DANCER_HEIGHT)))
-    .then((model) => {
-      if (model === null) return;
-      const holder = new THREE.Group();
-      holder.scale.setScalar(model.scale);
-      holder.position.y = DANCER_HEIGHT / 2;
-      const clone = model.source.clone(true);
-      clone.position.copy(model.centre).multiplyScalar(-1);
-      holder.add(clone);
-      field.dancer.object.remove(field.dancer.box);
-      field.dancer.object.add(holder);
-    })
-    .catch(() => {});
-}
+// Only her stand-in lives here: the grey box the field builds, which stands where she will until she
+// arrives. Her own model and her dance are dancer.js's job, driven by the beat from main.js, and main.js
+// hides this box the moment she is really in the scene. Nothing here loads her twice.

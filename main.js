@@ -1,10 +1,11 @@
 // main.js — the scene, the render loop and the state machine (title -> playing -> gameover): the one file that wires the others.
 import * as THREE from 'three';
 import * as T from './tuning.js';
-import { createField, resetField, updateField, pressPillar, setColumnX, loadPillarModels, loadDancerModel } from './pillars.js';
+import { createField, resetField, updateField, pressPillar, setColumnX, loadPillarModels } from './pillars.js';
 import { createPillarLabel } from './labels.js';
 import { createKeyboard } from './input.js';
-import { createUI, updateHud, showTitle, showGameOver, showPlayHint, setInstruments } from './ui.js';
+import { createUI, updateHud, showTitle, showGameOver, showPlayHint, setInstruments, showPortal } from './ui.js';
+import { createDancer, updateDancer } from './dancer.js';
 import { unlockAudio, playNote, playHit, playMiss, setInstrument } from './audio.js';
 
 // --- RENDERER
@@ -44,7 +45,10 @@ scene.add(fillLight);
 // of models, so the title screen never stalls and the game never breaks with them.
 const field = createField(scene, createPillarLabel, camera);
 loadPillarModels(field);
-loadDancerModel(field);
+// Her dance is written in dancer.js and driven by the beat, not by a clip: the rigged file has a skeleton
+// and no animation, so the motion is code. She arrives on her own time and the box in the field stands
+// until she does - if she never loads, the box is simply the dancer.
+const dancer = createDancer(scene);
 
 // Every window shape shows the same corridor, and the pillar line keeps its place across the screen:
 // PILLAR_COLUMN_SPLIT of the way across, on the right, wherever the window's shape puts the edges.
@@ -60,7 +64,19 @@ window.addEventListener('resize', resize);
 // --- STATE
 // orchestra is how many instruments are playing: one at the start of a run, and a portal raises it by one.
 let ui = null;
-const state = { phase: 'title', score: 0, lives: T.LIVES, combo: 0, hits: 0, orchestra: 1 };
+const state = { phase: 'title', score: 0, lives: T.LIVES, combo: 0, hits: 0, orchestra: 1, portalTimer: 0 };
+
+// --- A PORTAL: the next instrument joins the orchestra. Called every HITS_PER_PORTAL landed notes; once
+// the whole orchestra is in it does nothing at all, so the count can run past the list harmlessly.
+function openPortal() {
+  const joined = Math.min(T.INSTRUMENTS.length, state.orchestra + 1);
+  if (joined === state.orchestra) return; // everyone is already playing
+  state.orchestra = joined;
+  setInstrument(state.orchestra - 1);
+  setInstruments(ui, state.orchestra);
+  showPortal(ui, true, T.INSTRUMENTS[state.orchestra - 1]);
+  state.portalTimer = T.PORTAL_CUE_SECONDS;
+}
 
 function startRun() {
   state.phase = 'playing';
@@ -69,9 +85,11 @@ function startRun() {
   state.combo = 0;
   state.hits = 0;
   state.orchestra = 1;
+  state.portalTimer = 0;
   resetField(field); // the whole line goes back down the corridor and the notes are dealt again
   setInstrument(state.orchestra - 1);
   setInstruments(ui, state.orchestra);
+  showPortal(ui, false);
   updateHud(ui, state);
   showTitle(ui, false);
   showGameOver(ui, false, 0);
@@ -114,6 +132,7 @@ function tapLane(lane) {
   playHit();
   updateHud(ui, state);
   if (state.hits === T.HINT_HIDE_AFTER_HITS) showPlayHint(ui, false); // the hint has taught its first beats
+  if (state.hits % T.HITS_PER_PORTAL === 0) openPortal(); // the reward: one more instrument in the orchestra
 }
 
 // --- INPUT: sound wakes on the first keypress, SPACE starts and restarts
@@ -136,6 +155,20 @@ renderer.setAnimationLoop((now) => {
   lastFrame = now;
   // The hall glides on the title and game-over screens too; only the light cue stops.
   updateField(field, dt, state.hits, state.phase === 'playing');
+
+  // How hard the beat is hitting right now: 1 on the beat, fading either side of it. It is read off the
+  // lit pillar's own distance from its beat, so the dance and the light can never disagree.
+  const accent = field.litPillar === null
+    ? 0
+    : Math.max(0, 1 - Math.abs(field.litOffset) / T.ACCENT_FALLOFF_SECONDS);
+  updateDancer(dancer, dt, accent);
+  if (dancer.ready && field.dancer.box.visible) field.dancer.box.visible = false; // she has arrived
+
+  if (state.portalTimer > 0) {
+    state.portalTimer = Math.max(0, state.portalTimer - dt);
+    if (state.portalTimer === 0) showPortal(ui, false);
+  }
+
   renderer.render(scene, camera);
 });
 

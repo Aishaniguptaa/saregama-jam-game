@@ -84,9 +84,28 @@ export function createUI(root) {
     opacity: String(HINT_OPACITY),
   });
 
-  root.append(hud, area, hint, title, over);
+  // --- THE PORTAL: the one line that says the orchestra just grew. It fades in over the middle of the
+  // screen - clear of the orchestra panel on the left and the pillar line on the right - and fades out
+  // again; main.js owns how long it stays. Opacity, not hidden, so it can fade both ways.
+  const portal = el('div', 'portal-line');
+  Object.assign(portal.style, {
+    position: 'absolute',
+    left: '0',
+    right: '0',
+    top: '40%',
+    textAlign: 'center',
+    fontSize: '23px',
+    letterSpacing: '0.14em',
+    color: '#ffe6b8',
+    textShadow: '0 0 20px rgba(255, 205, 130, 0.7)',
+    pointerEvents: 'none',
+    opacity: '0',
+    transition: 'opacity 320ms ease',
+  });
 
-  const ui = { score, combo, lives, area, list, hint, title, over, overScore };
+  root.append(hud, area, hint, portal, title, over);
+
+  const ui = { score, combo, lives, area, list, hint, portal, title, over, overScore };
   over.hidden = true; // the game-over screen only appears when a run ends
   hint.hidden = true; // and the play hint only while a run is on
   updateHud(ui, { score: 0, lives: LIVES, combo: 0 });
@@ -107,6 +126,13 @@ export function setInstruments(ui, joinedCount) {
 
 export function showPlayHint(ui, visible) {
   ui.hint.hidden = !visible;
+}
+
+// --- THE PORTAL LINE: "A portal opens - Sitar joins the orchestra". shown is whether it should be up;
+// the name is only read when it is, so main.js can hold one string and not rebuild it every frame.
+export function showPortal(ui, shown, instrumentName) {
+  if (shown && instrumentName) ui.portal.textContent = `A portal opens — ${instrumentName} joins the orchestra`;
+  ui.portal.style.opacity = shown ? '1' : '0';
 }
 
 // --- NUMBERS ON SCREEN, straight from the state main.js owns

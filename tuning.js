@@ -139,6 +139,16 @@ export const INSTRUMENT_VOICES = [
   { type: 'triangle', octave: 2, duration: 0.55, gain: 0.12, attack: 0.003, detuneCents: 7 },              // Santoor: bright metal
 ];
 
+// --- PORTALS: every so many landed notes a portal opens and one more instrument joins the orchestra.
+// The whole list is on screen from the first second, dimmed; a portal is what turns a row bright and
+// hands that instrument the notes. The makers' knob for how fast the orchestra fills is HITS_PER_PORTAL.
+export const HITS_PER_PORTAL = 20;      // landed notes between one portal and the next
+export const PORTAL_CUE_SECONDS = 2.4;  // how long the portal's line stays on screen
+
+// --- THE DANCER'S BEAT: how sharply she marks a beat. 1 on the beat, fading to nothing over this many
+// seconds either side of it, so at the fastest tempo she is still still between beats.
+export const ACCENT_FALLOFF_SECONDS = 0.45;
+
 // --- THE ORCHESTRA PANEL, down the left of the screen
 export const INSTRUMENT_AREA_LEFT_PERCENT = 3;
 export const INSTRUMENT_AREA_TOP_PERCENT = 17;
