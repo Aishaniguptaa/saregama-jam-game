@@ -32,15 +32,15 @@
         radial-gradient(60% 48% at 50% 50%, rgba(9, 6, 17, 0.74) 0%, rgba(9, 6, 17, 0.5) 58%, rgba(9, 6, 17, 0) 100%),
         radial-gradient(125% 100% at 50% 50%, rgba(12, 8, 22, 0.46) 0%, rgba(9, 6, 17, 0.6) 62%, rgba(5, 3, 10, 0.92) 100%); }
     .screen[hidden] { display: none; }
-    /* ---- The title screen: the makers' own artwork across the top, the play rules underneath ----
-       The picture was drawn with a menu of buttons on it that this game does not have, so it is shown only
-       as far as its subtitle - the crop falls below "A RHYTHM JOURNEY THROUGH HAMPI" - and the rules take
-       the buttons' place, on the same dark stone the artwork's floor already is. */
-    .title-screen { display: flex; flex-direction: column; place-content: normal; padding: 0; }
-    .title-art { flex: 0 0 44vh; background: url('assets/homescreen.jpeg') center top / cover no-repeat; }
-    .title-body { flex: 1; max-width: none; align-content: center; justify-items: center; gap: 0.42em;
-      padding: 0.4rem 1.2rem 1.2rem;
-      background: linear-gradient(180deg, rgba(6, 4, 10, 0.5) 0%, rgba(6, 4, 10, 0.92) 20%, rgba(6, 4, 10, 0.97) 100%); }
+    /* ---- The title screen: the makers' own artwork full-bleed, the play rules written on it ----
+       The picture fills the screen and hides the game behind it, and the rules are laid over its middle -
+       straight across the menu the artwork was drawn with - on a soft dark panel, so the words read
+       against the sky and the buttons underneath them stop reading as anything you could press. */
+    .title-screen { background: url('assets/homescreen.jpeg') center / cover no-repeat; }
+    .title-body { max-width: min(92vw, 42rem); align-content: center; justify-items: center; gap: 0.4em;
+      margin-top: 16vh; padding: 1.1rem 1.6rem 1.3rem; border-radius: 14px;
+      background: linear-gradient(180deg, rgba(6, 4, 10, 0) 0%, rgba(6, 4, 10, 0.78) 12%,
+        rgba(6, 4, 10, 0.86) 82%, rgba(6, 4, 10, 0) 100%); }
     .title-body .title-ornament { margin: 0 auto 0.5em; }
     .title-body .screen-prompt { margin-top: 0.9em; }
     .title-legend { letter-spacing: 0.1em; color: #f0cd84; }

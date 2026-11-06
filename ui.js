@@ -79,13 +79,10 @@ export function createUI(root) {
     return ornament;
   }
 
-  // --- THE TITLE: the makers' own artwork carries the name and the look. It was drawn with a menu of
-  // buttons this game does not have, so the picture is cropped just below its subtitle and the play rules
-  // take the buttons' place on the dark stone underneath. SPACE begins the run from here: title -> play.
+  // --- THE TITLE: the makers' own artwork fills the screen and carries the name and the look, and the play
+  // rules are written straight onto it, over the middle. SPACE begins the run from here: title -> play.
   const title = el('div', 'screen title-screen');
   title.setAttribute('aria-label', 'SaReGaMa — a rhythm journey through Hampi');
-  const titleArt = el('div', 'title-art');
-  titleArt.setAttribute('aria-hidden', 'true'); // the picture is decor; the words below carry the meaning
   const titleBody = el('div', 'screen-body title-body');
   titleBody.append(
     titleOrnament(),
@@ -95,7 +92,7 @@ export function createUI(root) {
     el('p', 'screen-line', 'Every note you land is played by your orchestra.'),
     el('p', 'screen-prompt', 'Press SPACE to begin'),
   );
-  title.append(titleArt, titleBody);
+  title.append(titleBody);
 
   // --- THE RULES: the same gold-framed screen as the title, but on near-black, so the play rules are the
   // only thing to read. It sits between the title and the run: title -> SPACE -> rules -> SPACE -> play.
