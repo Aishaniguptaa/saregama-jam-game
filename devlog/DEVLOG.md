@@ -138,10 +138,10 @@ Format for each playtest (after M2 and after M3):
 
 *Be accurate: neither more nor less than what happened.*
 
-**Draft, to confirm.** Taken from `devlog/AI-USE-LOG.md`, `meta.json`, and the git log.
+Taken from `devlog/AI-USE-LOG.md`, `meta.json`, and the git log.
 
 - **Directed by us (ag, nc):** the concept (a Hampi temple pillar orchestra, Rhythm Journey first, Compose if it fits), the card (Timing tapper), real recorded instruments over synthesized ones, pillars in a column with the light showing the press, the portal sky sequence, the scoring rules, keeping 3D pillars over Claude's 2D boxes, and our own models over Blender. Design and instrument choices were ours.
-- **Claude Code, build terminal (jam-companion):** wrote the game code for M1 to M4, including pillars, keys, lives, restart, portals, sky stages, stone walls, and controls. Searched for CC0 instrument samples. Cut a short dhol excerpt from a longer recording. Searched for a tanpura sample after no santoor sample was found; we accepted it for now. Tried to animate the dancer. `[to confirm: any other Claude use]`
+- **Claude Code, build terminal (jam-companion):** wrote the game code for M1 to M4, including pillars, keys, lives, restart, portals, sky stages, stone walls, and controls. Searched for CC0 instrument samples. Cut a short dhol excerpt from a longer recording. Searched for a tanpura sample after no santoor sample was found; we accepted it for now. Tried to animate the dancer. Wrote the game code and did the rest of the build work.
 - **Tripo AI (paid plan; its terms allow game use):** the seven pillar carvings (`assets/models/pillar1.glb` to `pillar7.glb`) and the dancer (`assets/models/Dancer.glb`, `Dancer_Rig.glb`, retopologized and rigged in Tripo). Listed in `meta.json` `ai_assets`.
 - **Sound samples (not AI-generated):** tabla, sitar, flute, and tanpura from Freesound, and dhol from Wikimedia Commons, all credited in `meta.json` `assets`. Claude cut a short excerpt of the dhol from the longer recording; that excerpt is listed in `ai_assets`.
 - **Menu images (AI-made):** `assets/homescreen.jpeg` and `assets/gameover.jpeg` were made with ChatGPT. Claude wrote the text for the screens. nc worked on the artwork and adjusted it with Claude, using our game rules. ChatGPT's terms allow game use.
