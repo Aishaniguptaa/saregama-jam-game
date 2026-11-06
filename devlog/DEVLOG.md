@@ -68,6 +68,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. It doesn't make for good gameplay.
 
+### 13:59: Pillars in a column, not falling down
+- **Changed:** Dropped the falling pillars, like a piano game. The pillars now stand in a column on the right, with the instruments on the left. The light shows when to press.
+- **Expected:** An instrument added on each level or as the game goes on. Portals open up as we progress. The seven pillars show which instrument we're on.
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. Falling pillars were like any other traditional game and would get boring. Here you see the pillars placed and get the notes for each instrument. This is what the actual temple design has, and each rhythm hits the glowing pillars.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
