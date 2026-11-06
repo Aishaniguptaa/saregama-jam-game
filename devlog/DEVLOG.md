@@ -98,6 +98,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Only the hands moving up and down. (Both of us tested it ourselves, not a playtest.)
 - **Decided, and why (who):** Nothing decided yet.
 
+### 15:43: A late beat scores less
+- **Changed:** A beat that's a few seconds late adds less score.
+- **Expected:** didn't predict
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. It is not a missed beat.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
