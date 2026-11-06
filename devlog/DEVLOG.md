@@ -38,6 +38,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not tested yet.
 - **Decided, and why (ag, nc):** Both of us. Real recorded instruments would sound better and more real, and would enhance the gameplay experience, since music is our key feature.
 
+### 13:22: First playable M1 build (seven pillars, seven keys, lives)
+- **Changed:** Built M1 as plain shapes: seven pillars, seven keys, lives that cost a life on a wrong tap, and restart. Start screen at the bottom says what to do. Score top left, lives top right, grey boxes coming down, dancer placeholder at the bottom.
+- **Expected:** Working. We could hear the sound, tap, lose lives, see what happens, and test it.
+- **Saw:** We could tap, and we lost lives. Tapping a lane whose pillars had already passed the line was good, and didn't feel like a trap yet. We couldn't see which grey box is which note (we expected that). The centre pillar is annoying: it covers the dancer on its way down. We couldn't judge the timing between pillars because we couldn't see the keys to press. One of us guessed a key, and S worked for Sa. Every note has the same sound right now.
+- **Decided, and why (who):** Nothing decided yet.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
