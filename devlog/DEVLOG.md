@@ -44,6 +44,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** We could tap, and we lost lives. Tapping a lane whose pillars had already passed the line was good, and didn't feel like a trap yet. We couldn't see which grey box is which note (we expected that). The centre pillar is annoying: it covers the dancer on its way down. We couldn't judge the timing between pillars because we couldn't see the keys to press. One of us guessed a key, and S worked for Sa. Every note has the same sound right now.
 - **Decided, and why (who):** Nothing decided yet.
 
+### 13:26: Keep santoor; find another sample
+- **Changed:** The sample search found four of five instruments (tabla, sitar, flute, dhol), with no santoor. We're going to find another santoor sample instead of leaving it out.
+- **Expected:** didn't predict
+- **Saw:** Not yet.
+- **Decided, and why (ag, nc):** Both of us. We want to keep santoor for the Indian orchestra aspect.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
