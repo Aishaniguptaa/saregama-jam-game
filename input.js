@@ -24,13 +24,13 @@ const BUTTON_BORDER = '1px solid rgba(242, 198, 109, 0.30)';
 const BUTTON_COLOR = '#f2c66d';
 const SWARA_COLOR = 'rgba(236, 217, 180, 0.70)';
 
-// Does this device have a touch screen? Guarded so a missing DOM never throws.
+// Is the player on a finger, or on a mouse? Only a coarse POINTER counts, not merely the presence of a
+// touch screen: a Windows laptop with a touchscreen reports touch points but the player is using a
+// trackpad, and the lane strip would then sit over the game for no reason. A phone or tablet is coarse.
+// Guarded, so a missing DOM never throws.
 function hasTouchScreen() {
-  if (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0) return true;
-  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-    return window.matchMedia('(pointer: coarse)').matches;
-  }
-  return false;
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(pointer: coarse)').matches;
 }
 
 // --- THE TOUCH CONTROLS: seven buttons, one per lane, along the bottom. A tap does exactly what that lane's
@@ -110,10 +110,8 @@ function createTouchControls({ onLane, onRestartKey }) {
 
   document.body.append(bar);
 
-  const reveal = () => { bar.style.display = 'flex'; };
-  if (hasTouchScreen()) reveal();
-  // some devices report no touch points at load, so the first real touch is the more reliable signal
-  window.addEventListener('touchstart', reveal, { once: true, passive: true });
+  // Shown only where the pointer is a finger. A stray touch on a laptop must not summon the strip.
+  if (hasTouchScreen()) bar.style.display = 'flex';
 }
 
 // --- KEYBOARD
