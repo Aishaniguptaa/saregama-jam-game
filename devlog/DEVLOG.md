@@ -104,6 +104,12 @@ Format for each playtest (after M2 and after M3):
 - **Saw:** Not yet.
 - **Decided, and why (ag, nc):** Both of us. It is not a missed beat.
 
+### 15:45: Speed fix, left to Claude
+- **Changed:** Fixed the game getting quick too easily. We left the exact change to Claude.
+- **Expected:** didn't predict
+- **Saw:** Speed fix worked well now.
+- **Decided, and why (ag, nc):** Both of us. The game becomes really quick really easily. We left the exact change to Claude.
+
 ## Reflection
 
 *At the end: What did you decide that Claude didn't? What did you reject from Claude, and why? What would you do with another jam session?*
