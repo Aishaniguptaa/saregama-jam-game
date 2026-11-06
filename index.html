@@ -91,14 +91,19 @@
     .screen-prompt::before { content: ''; position: absolute; inset: 3px; border-radius: 9px; pointer-events: none;
       border: 1px solid rgba(230, 185, 106, 0.4); }
     /* ---- The game-over screen: the makers' own artwork, full bleed ----
-       The picture already carries GAME OVER, the "SCORE" label and "Press SPACE to Play Again". The one
-       thing it cannot know is the run's real score, so the game lays just that into the plaque, on a soft
-       patch of the same bronze, erasing the sample number printed into the artwork. */
-    .over-screen { background: url('assets/gameover.jpeg') center / cover no-repeat; }
-    /* nudged down onto the artwork's number; raise or lower this one value to move the score */
-    .over-screen .screen-body { margin-top: clamp(1rem, 7vh, 5rem); gap: 0; }
-    .over-patch { padding: 0.25em 1.4em; border-radius: 999px;
-      background: radial-gradient(66% 92% at 50% 50%, rgba(74, 54, 32, 0.99) 0%, rgba(74, 54, 32, 0.95) 62%, rgba(74, 54, 32, 0) 100%); }
+       The picture carries GAME OVER, the "SCORE" label and "Press SPACE to Play Again", and it leaves the
+       middle of its stone plaque bare. So the run's real number is laid straight onto that bare stone:
+       nothing has to be covered up this time. */
+    .over-screen { background: url('assets/gameover.png') center / cover no-repeat; }
+    /* The score is placed on the picture rather than laid out with the page: this covers the whole screen,
+       so the number can be dropped at the artwork's own coordinates. */
+    .over-screen .screen-body { position: absolute; inset: 0; display: block; max-width: none;
+      padding: 0; margin: 0; }
+    /* Where the plaque's bare centre sits in the artwork, as a share of the screen: 50% across, 57.4% down.
+       Raise or lower the 57.4% to move the score up or down the plaque. */
+    .over-patch { position: absolute; top: 57.4%; left: 50%; transform: translate(-50%, -50%);
+      padding: 0.2em 0.6em;
+      background: radial-gradient(70% 110% at 50% 50%, rgba(40, 26, 14, 0.5) 0%, rgba(40, 26, 14, 0.28) 58%, rgba(40, 26, 14, 0) 100%); }
     .over-score-value { margin: 0;
       font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
       font-size: clamp(1.8rem, 5.4vw, 3.4rem); font-weight: 700; letter-spacing: 0.06em; color: #f7dda4;

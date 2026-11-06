@@ -111,8 +111,8 @@ export function createUI(root) {
   rules.append(screenFrame(), rulesBody);
 
   // --- THE GAME OVER SCREEN: the makers' own artwork again, full bleed. The picture already carries GAME
-  // OVER, the "SCORE" label and "Press SPACE to Play Again", so the one thing it cannot know - the run's
-  // real score - is the only thing the game adds, laid on a soft bronze patch over the sample number.
+  // OVER, the "SCORE" label and "Press SPACE to Play Again", and it leaves the plaque's stone bare, so the
+  // one thing it cannot know - the run's real score - is the only thing the game adds, laid onto the plaque.
   const over = el('div', 'screen over-screen');
   const overBody = el('div', 'screen-body');
   const overScore = el('p', 'over-score-value', '0'); // main.js writes the run's score into this node
