@@ -9,7 +9,5 @@
     { "file": "assets/audio/dhol.wav", "source": "https://commons.wikimedia.org/wiki/File:DHOL_BEAT.wav", "license": "CC BY 3.0 — credit: Johnny Kalsi / The Dhol Foundation. Excerpt cut from the longer source recording by Claude." },
     { "file": "assets/audio/tanpura.mp3", "source": "https://freesound.org/people/luckylittleraven/sounds/416606/", "license": "CC0 1.0" }
   ],
-  "ai_assets": [
-    "assets/models/Pillars.glb"
-  ]
+  "ai_assets": []
 }
